@@ -9,7 +9,7 @@ int showhidden  = 0; /* Set to 1 to show hidden files by default */
 char *idlecmd   = "rain"; /* The screensaver program */
 
 struct assoc assocs[] = {
-	{ "\\.(avi|mp4|mkv|mp3|ogg|flac|mov)$", "mplayer" },
+	{ "\\.(avi|mp4|mkv|mp3|ogg|flac|mov)$", "mpv" },
 	{ "\\.(png|jpg|gif)$", "feh" },
 	{ "\\.(html|svg)$", "firefox" },
 	{ "\\.pdf$", "mupdf" },
