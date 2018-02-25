@@ -529,6 +529,8 @@ populate(char *path, char *oldpath, char *fltr)
 
 	ndents = dentfill(path, &dents, visible, &re);
 	freefilter(&re);
+	if (ndents == 0)
+		return 0; /* Empty result */
 
 	qsort(dents, ndents, sizeof(*dents), entrycmp);
 
