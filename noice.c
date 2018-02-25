@@ -213,8 +213,10 @@ openwith(char *file)
 			continue;
 		if (regexec(&regex, file, 0, NULL, 0) == 0) {
 			bin = assocs[i].bin;
+			regfree(&regex);
 			break;
 		}
+		regfree(&regex);
 	}
 	DPRINTF_S(bin);
 	return bin;
@@ -236,6 +238,12 @@ setfilter(regex_t *regex, char *filter)
 		printmsg(errbuf);
 	}
 	return r;
+}
+
+void
+freefilter(regex_t *regex)
+{
+	regfree(regex);
 }
 
 void
@@ -520,6 +528,7 @@ populate(char *path, char *oldpath, char *fltr)
 	dents = NULL;
 
 	ndents = dentfill(path, &dents, visible, &re);
+	freefilter(&re);
 
 	qsort(dents, ndents, sizeof(*dents), entrycmp);
 
@@ -677,6 +686,7 @@ nochange:
 			r = setfilter(&re, tmp);
 			if (r != 0)
 				goto nochange;
+			freefilter(&re);
 			strlcpy(fltr, tmp, sizeof(fltr));
 			DPRINTF_S(fltr);
 			/* Save current */
