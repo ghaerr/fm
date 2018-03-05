@@ -1,22 +1,23 @@
-.Dd February 25, 2016
+.Dd March 5, 2018
 .Dt NOICE 1
 .Os
 .Sh NAME
 .Nm noice
 .Nd small file browser
 .Sh SYNOPSIS
-.Nm noice
+.Nm
 .Op Ar dir
 .Sh DESCRIPTION
 .Nm
 is a simple and efficient file browser that gets out of your way
-as much as possible.  It was initially implemented to be controlled
-with a TV remote control.
+as much as possible.
+It was initially implemented to be controlled with a TV remote control.
 .Pp
 .Nm
 defaults to the current directory if
 .Ar dir
-is not specified.  As an extra feature, if
+is not specified.
+As an extra feature, if
 .Ar dir
 is a relative path,
 .Nm
@@ -25,7 +26,8 @@ navigation key presses.
 .Pp
 .Nm
 supports both vi-like and emacs-like key bindings in the default
-configuration.  The default key bindings are described below;
+configuration.
+The default key bindings are described below;
 their functionality is described in more detail later.
 .Pp
 .Bl -tag -width "l, [Right], [Return] or C-mXXXX" -offset indent -compact
@@ -50,9 +52,11 @@ Change filter (see below for more information).
 .It Ic c
 Change into the given directory.
 .It Ic ~
-Change to the HOME directory.
+Change to the
+.Ev HOME
+directory.
 .It Ic \&.
-Toggle hide .dot files.
+Toggle hidden .dot files.
 .It Ic t
 Toggle sort by time modified.
 .It Ic C-l
@@ -78,39 +82,54 @@ is configured by modifying
 and recompiling the code.
 .Pp
 The file associations are specified by regexes
-matching on the currently selected filename.  If a match is found the associated
-program is executed with the filename passed in as the argument.  If no match
-is found the program
+matching on the currently selected filename.
+If a match is found the associated program is executed
+with the filename passed in as the argument.
+If no match is found the program
 .Xr less 1
-is invoked.  This is useful for editing text files
-as one can use the 'v' command in
-.Xr less 1 to edit the file using the EDITOR environment variable.
+is invoked.
+This is useful for editing text files as one can use the
+.Ic v
+command in
+.Xr less 1
+to edit the file using the
+.Ev EDITOR
+environment variable.
 .Pp
 See the examples section below for more information.
 .Sh FILTERS
 Filters allow you to use regexes to display only the matched
-entries in the current directory view.  This effectively allows
-searching through the directory tree for a particular entry.
+entries in the current directory view.
+This effectively allows searching through the directory tree
+for a particular entry.
 .Pp
-Filters do not stack on top of each other.  They are applied anew
-every time.
+Filters do not stack on top of each other.
+They are applied anew every time.
 .Pp
 To reset the filter you can input an empty filter expression.
 .Pp
 If
 .Nm
-is invoked as root the default filter will also match hidden
-files.
+is invoked as root the default filter will also match hidden files.
 .Sh ENVIRONMENT
-The SHELL, EDITOR and PAGER environment variables take precedence
-when dealing with the !, e and p commands respectively.
+The
+.Ev SHELL ,
+.Ev EDITOR
+and
+.Ev PAGER
+environment variables take precedence when dealing with the
+.Ic \&! ,
+.Ic e
+and
+.Ic p
+commands respectively.
 .Sh EXAMPLES
 The following example shows one possible configuration for
 file associations which is also the default:
 .Bd -literal
 struct assoc assocs[] = {
-	{ "\\.(avi|mp4|mkv|mp3|ogg|flac|mov)$", "mplayer" },
-	{ "\\.(png|jpg|gif)$", "feh" },
+	{ "\\.(avi|mp4|mkv|mp3|ogg|flac|mov)$", "mpv" },
+	{ "\\.(png|jpg|gif)$", "sxiv" },
 	{ "\\.(html|svg)$", "firefox" },
 	{ "\\.pdf$", "mupdf" },
 	{ "\\.sh$", "sh" },
@@ -118,7 +137,9 @@ struct assoc assocs[] = {
 };
 .Ed
 .Sh KNOWN ISSUES
-If you are using urxvt you might have to set backspacekey to DEC.
+If you are using
+.Xr urxvt 1
+you might have to set backspace key to DEC.
 .Sh AUTHORS
 .An Lazaros Koromilas Aq Mt lostd@2f30.org ,
 .An Dimitris Papastamos Aq Mt sin@2f30.org .
