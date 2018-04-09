@@ -49,11 +49,11 @@ struct key bindings[] = {
 	{ CONTROL('U'),   SEL_PGUP },
 	/* Home */
 	{ KEY_HOME,       SEL_HOME },
-	{ CONTROL('A'),   SEL_HOME },
+	{ META('<'),      SEL_HOME },
 	{ '^',            SEL_HOME },
 	/* End */
 	{ KEY_END,        SEL_END },
-	{ CONTROL('E'),   SEL_END },
+	{ META('>'),      SEL_END },
 	{ '$',            SEL_END },
 	/* Change dir */
 	{ 'c',            SEL_CD },

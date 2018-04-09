@@ -38,6 +38,7 @@
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define ISODD(x) ((x) & 1)
 #define CONTROL(c) ((c) ^ 0x40)
+#define META(c) ((c) ^ 0x80)
 
 struct assoc {
 	char *regex; /* Regex to match on filename */
@@ -335,6 +336,18 @@ printprompt(char *str)
 	printw(str);
 }
 
+int xgetch(void)
+{
+	int c;
+
+	c = getch();
+	if (c == -1)
+		idle++;
+	else
+		idle = 0;
+	return c;
+}
+
 /* Returns SEL_* if key is bound and 0 otherwise.
  * Also modifies the run and env pointers (used on SEL_{RUN,RUNARG}) */
 int
@@ -342,11 +355,9 @@ nextsel(char **run, char **env)
 {
 	int c, i;
 
-	c = getch();
-	if (c == -1)
-		idle++;
-	else
-		idle = 0;
+	c = xgetch();
+	if (c == 033)
+		c = META(xgetch());
 
 	for (i = 0; i < LEN(bindings); i++)
 		if (c == bindings[i].sym) {
