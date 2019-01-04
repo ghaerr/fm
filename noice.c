@@ -743,7 +743,7 @@ nochange:
 			}
 			strlcpy(path, newpath, sizeof(path));
 			/* Reset filter */
-			strlcpy(fltr, ifilter, sizeof(fltr))
+			strlcpy(fltr, ifilter, sizeof(fltr));
 			DPRINTF_S(path);
 			goto begin;
 		case SEL_CDHOME:
