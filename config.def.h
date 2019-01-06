@@ -4,6 +4,7 @@
 #define EMPTY "   "
 
 int mtimeorder  = 0; /* Set to 1 to sort by time modified */
+int icaseorder  = 0; /* Set to 1 to sort by ignoring case */
 int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
 int showhidden  = 0; /* Set to 1 to show hidden files by default */
 char *idlecmd   = "rain"; /* The screensaver program */
@@ -80,6 +81,8 @@ struct key bindings[] = {
 	{ '.',            SEL_TOGGLEDOT },
 	/* Toggle sort by time */
 	{ 't',            SEL_MTIME },
+	/* Toggle case sensitivity */
+	{ 'i',            SEL_ICASE },
 	{ CONTROL('L'),   SEL_REDRAW },
 	/* Run command */
 	{ 'z',            SEL_RUN, "top" },

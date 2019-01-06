@@ -66,6 +66,7 @@ enum action {
 	SEL_CDHOME,
 	SEL_TOGGLEDOT,
 	SEL_MTIME,
+	SEL_ICASE,
 	SEL_REDRAW,
 	SEL_RUN,
 	SEL_RUNARG,
@@ -271,7 +272,10 @@ entrycmp(const void *va, const void *vb)
 
 	if (mtimeorder)
 		return b->t - a->t;
-	return strcmp(a->name, b->name);
+	if (icaseorder)
+		return strcasecmp(a->name, b->name);
+	else
+		return strcmp(a->name, b->name);
 }
 
 void
@@ -793,6 +797,12 @@ nochange:
 			goto begin;
 		case SEL_MTIME:
 			mtimeorder = !mtimeorder;
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
+			goto begin;
+		case SEL_ICASE:
+			icaseorder = !icaseorder;
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
