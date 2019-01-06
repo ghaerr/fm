@@ -45,6 +45,11 @@ struct assoc {
 	char *bin;   /* Program */
 };
 
+struct cpair {
+	int fg;
+	int bg;
+};
+
 /* Supported actions */
 enum action {
 	SEL_QUIT = 1,
@@ -270,6 +275,16 @@ entrycmp(const void *va, const void *vb)
 }
 
 void
+initcolor(void)
+{
+	int i;
+
+	start_color();
+	for (i = 1; i < LEN(pairs); i++)
+		init_pair(i, pairs[i].fg, pairs[i].bg);
+}
+
+void
 initcurses(void)
 {
 	char *term;
@@ -282,6 +297,8 @@ initcurses(void)
 			fprintf(stderr, "failed to initialize curses\n");
 		exit(1);
 	}
+	if (has_colors())
+		initcolor();
 	cbreak();
 	noecho();
 	nonl();
@@ -420,37 +437,45 @@ void
 printent(struct entry *ent, int active)
 {
 	char name[PATH_MAX];
-	unsigned int maxlen = COLS - strlen(CURSR) - 1;
+	unsigned int len = COLS - strlen(CURSR) - 1;
 	char cm = 0;
+	int attr = 0;
 
 	/* Copy name locally */
 	strlcpy(name, ent->name, sizeof(name));
 
+	/* No text wrapping in entries */
+	if (strlen(name) < len)
+		len = strlen(name) + 1;
+
 	if (S_ISDIR(ent->mode)) {
 		cm = '/';
-		maxlen--;
+		attr |= DIR_ATTR;
 	} else if (S_ISLNK(ent->mode)) {
 		cm = '@';
-		maxlen--;
+		attr |= LINK_ATTR;
 	} else if (S_ISSOCK(ent->mode)) {
 		cm = '=';
-		maxlen--;
+		attr |= SOCK_ATTR;
 	} else if (S_ISFIFO(ent->mode)) {
 		cm = '|';
-		maxlen--;
+		attr |= FIFO_ATTR;
 	} else if (ent->mode & S_IXUSR) {
 		cm = '*';
-		maxlen--;
+		attr |= EXEC_ATTR;
 	}
 
-	/* No text wrapping in entries */
-	if (strlen(name) > maxlen)
-		name[maxlen] = '\0';
+	if (active)
+		attr |= CURSR_ATTR;
 
-	if (cm == 0)
-		printw("%s%s\n", active ? CURSR : EMPTY, name);
-	else
-		printw("%s%s%c\n", active ? CURSR : EMPTY, name, cm);
+	if (cm) {
+		name[len-1] = cm;
+		name[len] = '\0';
+	}
+
+	attron(attr);
+	printw("%s%s\n", active ? CURSR : EMPTY, name);
+	attroff(attr);
 }
 
 int

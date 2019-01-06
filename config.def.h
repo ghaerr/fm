@@ -8,6 +8,24 @@ int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
 int showhidden  = 0; /* Set to 1 to show hidden files by default */
 char *idlecmd   = "rain"; /* The screensaver program */
 
+#define CURSR_ATTR A_REVERSE
+#define DIR_ATTR   A_BOLD | COLOR_PAIR(4)
+#define LINK_ATTR  A_BOLD | COLOR_PAIR(6)
+#define SOCK_ATTR  A_BOLD | COLOR_PAIR(1)
+#define FIFO_ATTR  A_BOLD | COLOR_PAIR(5)
+#define EXEC_ATTR  A_BOLD | COLOR_PAIR(2)
+
+struct cpair pairs[] = {
+	{ .fg = 0, .bg = 0 },
+	/* pairs start at 1 */
+	{ COLOR_RED,     0 },
+	{ COLOR_GREEN,   0 },
+	{ COLOR_YELLOW,  0 },
+	{ COLOR_BLUE,    0 },
+	{ COLOR_MAGENTA, 0 },
+	{ COLOR_CYAN,    0 },
+};
+
 struct assoc assocs[] = {
 	{ "\\.(avi|mp4|mkv|mp3|ogg|flac|mov)$", "mpv" },
 	{ "\\.(png|jpg|gif)$", "sxiv" },
