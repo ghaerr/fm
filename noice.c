@@ -65,6 +65,7 @@ enum action {
 	SEL_CD,
 	SEL_CDHOME,
 	SEL_TOGGLEDOT,
+	SEL_DSORT,
 	SEL_MTIME,
 	SEL_ICASE,
 	SEL_REDRAW,
@@ -266,9 +267,27 @@ visible(regex_t *regex, char *file)
 }
 
 int
+dircmp(mode_t a, mode_t b)
+{
+	if (S_ISDIR(a) && S_ISDIR(b))
+		return 0;
+	if (!S_ISDIR(a) && !S_ISDIR(b))
+		return 0;
+	if (S_ISDIR(a))
+		return -1;
+	else
+		return 1;
+}
+
+int
 entrycmp(const void *va, const void *vb)
 {
 	const struct entry *a = va, *b = vb;
+
+	if (dirorder) {
+		if (dircmp(a->mode, b->mode) != 0)
+			return dircmp(a->mode, b->mode);
+	}
 
 	if (mtimeorder)
 		return b->t - a->t;
@@ -797,6 +816,12 @@ nochange:
 			goto begin;
 		case SEL_MTIME:
 			mtimeorder = !mtimeorder;
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
+			goto begin;
+		case SEL_DSORT:
+			dirorder = !dirorder;
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));

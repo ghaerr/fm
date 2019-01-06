@@ -3,6 +3,7 @@
 #define CURSR " > "
 #define EMPTY "   "
 
+int dirorder    = 0; /* Set to 1 to sort by directory first */
 int mtimeorder  = 0; /* Set to 1 to sort by time modified */
 int icaseorder  = 0; /* Set to 1 to sort by ignoring case */
 int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
@@ -79,6 +80,8 @@ struct key bindings[] = {
 	{ '~',            SEL_CDHOME },
 	/* Toggle hide .dot files */
 	{ '.',            SEL_TOGGLEDOT },
+	/* Toggle sort by directory first */
+	{ 'd',            SEL_DSORT },
 	/* Toggle sort by time */
 	{ 't',            SEL_MTIME },
 	/* Toggle case sensitivity */
