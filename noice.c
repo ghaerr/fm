@@ -838,17 +838,23 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto begin;
 		case SEL_RUN:
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
 			spawn(run, NULL, path);
 			initcurses();
-			break;
+			goto begin;
 		case SEL_RUNARG:
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
 			spawn(run, dents[cur].name, path);
 			initcurses();
-			break;
+			goto begin;
 		}
 		/* Screensaver */
 		if (idletimeout != 0 && idle == idletimeout) {
