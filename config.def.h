@@ -10,21 +10,12 @@ int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
 int showhidden  = 0; /* Set to 1 to show hidden files by default */
 char *idlecmd   = "rain"; /* The screensaver program */
 
-#ifdef USE_COLOR
 #define CURSR_ATTR A_REVERSE
 #define DIR_ATTR   A_BOLD | COLOR_PAIR(4)
 #define LINK_ATTR  A_BOLD | COLOR_PAIR(6)
 #define SOCK_ATTR  A_BOLD | COLOR_PAIR(1)
 #define FIFO_ATTR  A_BOLD | COLOR_PAIR(5)
 #define EXEC_ATTR  A_BOLD | COLOR_PAIR(2)
-#else
-#define CURSR_ATTR A_REVERSE
-#define DIR_ATTR   A_BOLD
-#define LINK_ATTR  A_BOLD
-#define SOCK_ATTR  A_BOLD
-#define FIFO_ATTR  A_BOLD
-#define EXEC_ATTR  A_BOLD
-#endif
 
 struct cpair pairs[] = {
 	{ .fg = 0, .bg = 0 },
