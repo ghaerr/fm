@@ -321,7 +321,7 @@ initcurses(void)
 			fprintf(stderr, "failed to initialize curses\n");
 		exit(1);
 	}
-	if (has_colors())
+	if (usecolor && has_colors())
 		initcolor();
 	cbreak();
 	noecho();
