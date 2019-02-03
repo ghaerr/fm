@@ -303,6 +303,7 @@ initcolor(void)
 	int i;
 
 	start_color();
+	use_default_colors();
 	for (i = 1; i < LEN(pairs); i++)
 		init_pair(i, pairs[i].fg, pairs[i].bg);
 }

@@ -29,12 +29,12 @@ char *idlecmd   = "rain"; /* The screensaver program */
 struct cpair pairs[] = {
 	{ .fg = 0, .bg = 0 },
 	/* pairs start at 1 */
-	{ COLOR_RED,     0 },
-	{ COLOR_GREEN,   0 },
-	{ COLOR_YELLOW,  0 },
-	{ COLOR_BLUE,    0 },
-	{ COLOR_MAGENTA, 0 },
-	{ COLOR_CYAN,    0 },
+	{ COLOR_RED,     -1 },
+	{ COLOR_GREEN,   -1 },
+	{ COLOR_YELLOW,  -1 },
+	{ COLOR_BLUE,    -1 },
+	{ COLOR_MAGENTA, -1 },
+	{ COLOR_CYAN,    -1 },
 };
 
 struct assoc assocs[] = {
