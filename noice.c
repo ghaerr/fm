@@ -376,7 +376,8 @@ printprompt(char *str)
 	printw(str);
 }
 
-int xgetch(void)
+int
+xgetch(void)
 {
 	int c;
 
@@ -492,7 +493,7 @@ printent(struct entry *ent, int active)
 		attr |= CURSR_ATTR;
 
 	if (cm) {
-		name[len-1] = cm;
+		name[len - 1] = cm;
 		name[len] = '\0';
 	}
 
