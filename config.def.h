@@ -11,13 +11,15 @@ int showhidden  = 0; /* Set to 1 to show hidden files by default */
 int usecolor    = 0; /* Set to 1 to enable color attributes */
 char *idlecmd   = "rain"; /* The screensaver program */
 
-#define CURSR_ATTR A_REVERSE
-#define DIR_ATTR   A_BOLD | COLOR_PAIR(4)
-#define LINK_ATTR  A_BOLD | COLOR_PAIR(6)
-#define SOCK_ATTR  A_BOLD | COLOR_PAIR(1)
-#define FIFO_ATTR  A_BOLD | COLOR_PAIR(5)
-#define EXEC_ATTR  A_BOLD | COLOR_PAIR(2)
+/* See curs_attr(3) for valid video attributes */
+#define CURSR_ATTR A_NORMAL
+#define DIR_ATTR   A_NORMAL | COLOR_PAIR(4)
+#define LINK_ATTR  A_NORMAL | COLOR_PAIR(6)
+#define SOCK_ATTR  A_NORMAL | COLOR_PAIR(1)
+#define FIFO_ATTR  A_NORMAL | COLOR_PAIR(5)
+#define EXEC_ATTR  A_NORMAL | COLOR_PAIR(2)
 
+/* Colors to use with COLOR_PAIR(n) as attributes */
 struct cpair pairs[] = {
 	{ .fg = 0, .bg = 0 },
 	/* pairs start at 1 */
