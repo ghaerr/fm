@@ -45,6 +45,7 @@ struct assoc {
 	char *regex; /* Regex to match on filename */
 	char *file;
 	char *argv[NR_ARGS];
+	regex_t regcomp;
 };
 
 struct cpair {
@@ -246,23 +247,16 @@ xgetenv(char *name, char *fallback)
 struct assoc *
 openwith(char *file)
 {
-	regex_t regex;
-	struct assoc *assoc = NULL;
 	int i;
 
 	for (i = 0; i < LEN(assocs); i++) {
-		if (regcomp(&regex, assocs[i].regex,
-			    REG_NOSUB | REG_EXTENDED | REG_ICASE) != 0)
-			continue;
-		if (regexec(&regex, file, 0, NULL, 0) == 0) {
-			assoc = &assocs[i];
-			regfree(&regex);
-			break;
+		if (regexec(&assocs[i].regcomp, file, 0, NULL, 0) == 0) {
+			DPRINTF_S(assocs[i].argv[0]);
+			return &assocs[i];
 		}
-		regfree(&regex);
 	}
-	DPRINTF_S(assoc->argv[0]);
-	return assoc;
+
+	return NULL;
 }
 
 int
@@ -911,6 +905,24 @@ usage(char *argv0)
 	exit(1);
 }
 
+void
+initassocs(void)
+{
+	char errbuf[256];
+	int i, r;
+
+	for (i = 0; i < LEN(assocs); i++) {
+		r = regcomp(&assocs[i].regcomp, assocs[i].regex,
+			    REG_NOSUB | REG_EXTENDED | REG_ICASE);
+		if (r != 0) {
+			regerror(r, &assocs[i].regcomp, errbuf, sizeof(errbuf));
+			fprintf(stderr, "invalid regex assocs[%d]: %s: %s\n",
+			        i, assocs[i].regex, errbuf);
+			exit(1);
+		}
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -948,6 +960,7 @@ main(int argc, char *argv[])
 
 	/* Set locale before curses setup */
 	setlocale(LC_ALL, "");
+	initassocs();
 	initcurses();
 	browse(ipath, ifilter);
 	exitcurses();
