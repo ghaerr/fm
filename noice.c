@@ -33,6 +33,7 @@
 #define DPRINTF_P(x)
 #endif /* DEBUG */
 
+#define NR_ARGS	32
 #define LEN(x) (sizeof(x) / sizeof(*(x)))
 #undef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -42,7 +43,8 @@
 
 struct assoc {
 	char *regex; /* Regex to match on filename */
-	char *bin;   /* Program */
+	char *file;
+	char *argv[NR_ARGS];
 };
 
 struct cpair {
@@ -178,7 +180,7 @@ xdirname(const char *path)
 }
 
 void
-spawn(char *file, char *arg, char *dir)
+spawnvp(char *dir, char *file, char *argv[])
 {
 	pid_t pid;
 	int status;
@@ -187,7 +189,7 @@ spawn(char *file, char *arg, char *dir)
 	if (pid == 0) {
 		if (dir != NULL)
 			chdir(dir);
-		execlp(file, file, arg, NULL);
+		execvp(file, argv);
 		_exit(1);
 	} else {
 		/* Ignore interruptions */
@@ -195,6 +197,39 @@ spawn(char *file, char *arg, char *dir)
 			DPRINTF_D(status);
 		DPRINTF_D(pid);
 	}
+}
+
+void
+spawnlp(char *dir, char *file, char *argv0, ...)
+{
+	char *argv[NR_ARGS];
+	va_list ap;
+	int argc;
+
+	va_start(ap, argv0);
+	argv[0] = argv0;
+	for (argc = 1; argv[argc] = va_arg(ap, char *); argc++)
+		;
+	argv[argc] = NULL;
+	va_end(ap);
+	spawnvp(dir, file, argv);
+}
+
+void
+spawnassoc(struct assoc *assoc, char *arg)
+{
+	char *argv[NR_ARGS];
+	int i;
+
+	for (i = 0; assoc->argv[i]; i++) {
+		if (strcmp(assoc->argv[i], "{}") == 0) {
+			argv[i] = arg;
+			continue;
+		}
+		argv[i] = assoc->argv[i];
+	}
+	argv[i] = NULL;
+	spawnvp(NULL, assoc->file, argv);
 }
 
 char *
@@ -208,11 +243,11 @@ xgetenv(char *name, char *fallback)
 	return value && value[0] ? value : fallback;
 }
 
-char *
+struct assoc *
 openwith(char *file)
 {
 	regex_t regex;
-	char *bin = NULL;
+	struct assoc *assoc = NULL;
 	int i;
 
 	for (i = 0; i < LEN(assocs); i++) {
@@ -220,14 +255,14 @@ openwith(char *file)
 			    REG_NOSUB | REG_EXTENDED | REG_ICASE) != 0)
 			continue;
 		if (regexec(&regex, file, 0, NULL, 0) == 0) {
-			bin = assocs[i].bin;
+			assoc = &assocs[i];
 			regfree(&regex);
 			break;
 		}
 		regfree(&regex);
 	}
-	DPRINTF_S(bin);
-	return bin;
+	DPRINTF_S(assoc->argv[0]);
+	return assoc;
 }
 
 int
@@ -653,7 +688,8 @@ browse(char *ipath, char *ifilter)
 {
 	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
 	char fltr[LINE_MAX];
-	char *bin, *dir, *tmp, *run, *env;
+	char *dir, *tmp, *run, *env;
+	struct assoc *assoc;
 	struct stat sb;
 	regex_t re;
 	int r, fd;
@@ -726,13 +762,13 @@ nochange:
 				strlcpy(fltr, ifilter, sizeof(fltr));
 				goto begin;
 			case S_IFREG:
-				bin = openwith(newpath);
-				if (bin == NULL) {
+				assoc = openwith(newpath);
+				if (assoc == NULL) {
 					printmsg("No association");
 					goto nochange;
 				}
 				exitcurses();
-				spawn(bin, newpath, NULL);
+				spawnassoc(assoc, newpath);
 				initcurses();
 				continue;
 			default:
@@ -845,7 +881,7 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
-			spawn(run, NULL, path);
+			spawnlp(path, run, run, NULL);
 			initcurses();
 			goto begin;
 		case SEL_RUNARG:
@@ -854,7 +890,7 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
-			spawn(run, dents[cur].name, path);
+			spawnlp(path, run, run, dents[cur].name, NULL);
 			initcurses();
 			goto begin;
 		}
@@ -862,7 +898,7 @@ nochange:
 		if (idletimeout != 0 && idle == idletimeout) {
 			idle = 0;
 			exitcurses();
-			spawn(idlecmd, NULL, NULL);
+			spawnlp(NULL, idlecmd, idlecmd, NULL);
 			initcurses();
 		}
 	}

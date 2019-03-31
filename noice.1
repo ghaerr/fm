@@ -1,4 +1,4 @@
-.Dd Jan 19, 2019
+.Dd March 31, 2019
 .Dt NOICE 1
 .Os
 .Sh NAME
@@ -99,8 +99,6 @@ command in
 to edit the file using the
 .Ev EDITOR
 environment variable.
-.Pp
-See the examples section below for more information.
 .Sh FILTERS
 Filters allow you to use regexes to display only the matched
 entries in the current directory view.
@@ -127,19 +125,6 @@ environment variables take precedence when dealing with the
 and
 .Ic p
 commands respectively.
-.Sh EXAMPLES
-The following example shows one possible configuration for
-file associations which is also the default:
-.Bd -literal
-struct assoc assocs[] = {
-	{ "\\.(avi|mp4|mkv|mp3|ogg|flac|mov)$", "mpv" },
-	{ "\\.(png|jpg|gif)$", "sxiv" },
-	{ "\\.(html|svg)$", "firefox" },
-	{ "\\.pdf$", "mupdf" },
-	{ "\\.sh$", "sh" },
-	{ ".", "less" },
-};
-.Ed
 .Sh KNOWN ISSUES
 If you are using
 .Xr urxvt 1
