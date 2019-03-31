@@ -899,13 +899,6 @@ nochange:
 }
 
 void
-usage(char *argv0)
-{
-	fprintf(stderr, "usage: %s [dir]\n", argv0);
-	exit(1);
-}
-
-void
 initassocs(void)
 {
 	char errbuf[256];
@@ -921,6 +914,13 @@ initassocs(void)
 			exit(1);
 		}
 	}
+}
+
+void
+usage(char *argv0)
+{
+	fprintf(stderr, "usage: %s [dir]\n", argv0);
+	exit(1);
 }
 
 int
