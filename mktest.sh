@@ -30,3 +30,8 @@ echo 'chmod 000 test/cage' > cage/lock.sh
 echo 'chmod 755 test/cage' > cage-unlock.sh
 mkdir cage/lion
 echo 'chmod 000 test/cage' > cage/lion/lock.sh
+touch noice-0.1.log
+touch noice-0.01.log
+touch noice-0.2.log
+touch noice-0.02.log
+touch noice-0.10.log
