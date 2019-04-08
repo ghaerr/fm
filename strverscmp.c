@@ -11,8 +11,8 @@ strverscmp(const char *str1, const char *str2)
 	size_t i1 = 0;
 	size_t i2 = 0;
 	for (; i1 < len1 && i2 < len2; i1++, i2++) {
-		char c1 = str1[i1];
-		char c2 = str2[i2];
+		unsigned char c1 = str1[i1];
+		unsigned char c2 = str2[i2];
 		if (isdigit(c1) && isdigit(c2)) {
 			unsigned long long int num1;
 			unsigned long long int num2;
