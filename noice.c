@@ -20,19 +20,6 @@
 
 #include "util.h"
 
-#ifdef DEBUG
-#define DEBUG_FD 8
-#define DPRINTF_D(x) dprintf(DEBUG_FD, #x "=%d\n", x)
-#define DPRINTF_U(x) dprintf(DEBUG_FD, #x "=%u\n", x)
-#define DPRINTF_S(x) dprintf(DEBUG_FD, #x "=%s\n", x)
-#define DPRINTF_P(x) dprintf(DEBUG_FD, #x "=0x%p\n", x)
-#else
-#define DPRINTF_D(x)
-#define DPRINTF_U(x)
-#define DPRINTF_S(x)
-#define DPRINTF_P(x)
-#endif /* DEBUG */
-
 #define NR_ARGS	32
 #define LEN(x) (sizeof(x) / sizeof(*(x)))
 #undef MIN
@@ -117,7 +104,6 @@ void printmsg(char *);
 void printwarn(void);
 void printerr(int, char *);
 
-#undef dprintf
 int
 dprintf(int fd, const char *fmt, ...)
 {
