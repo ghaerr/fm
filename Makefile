@@ -7,9 +7,9 @@ MANPREFIX = $(PREFIX)/man
 #CFLAGS = -g
 LDLIBS = -lcurses
 
-DISTFILES = noice.c strlcat.c strlcpy.c util.h config.def.h\
+DISTFILES = noice.c strlcat.c strlcpy.c strverscmp.c util.h config.def.h\
     noice.1 Makefile README LICENSE
-OBJ = noice.o strlcat.o strlcpy.o
+OBJ = noice.o strlcat.o strlcpy.o strverscmp.o
 BIN = noice
 
 all: $(BIN)

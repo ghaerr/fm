@@ -6,6 +6,7 @@
 int dirorder    = 0; /* Set to 1 to sort by directory first */
 int mtimeorder  = 0; /* Set to 1 to sort by time modified */
 int icaseorder  = 0; /* Set to 1 to sort by ignoring case */
+int versorder   = 0; /* Set to 1 to sort by version number */
 int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
 int showhidden  = 0; /* Set to 1 to show hidden files by default */
 int usecolor    = 0; /* Set to 1 to enable color attributes */
@@ -89,6 +90,8 @@ struct key bindings[] = {
 	{ 't',            SEL_MTIME },
 	/* Toggle case sensitivity */
 	{ 'i',            SEL_ICASE },
+	/* Toggle sort by version number */
+	{ 'v',            SEL_VERS },
 	{ CONTROL('L'),   SEL_REDRAW },
 	/* Run command */
 	{ 'z',            SEL_RUN, "top" },

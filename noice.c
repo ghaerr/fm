@@ -58,6 +58,7 @@ enum action {
 	SEL_DSORT,
 	SEL_MTIME,
 	SEL_ICASE,
+	SEL_VERS,
 	SEL_REDRAW,
 	SEL_RUN,
 	SEL_RUNARG,
@@ -308,8 +309,9 @@ entrycmp(const void *va, const void *vb)
 		return b->t - a->t;
 	if (icaseorder)
 		return strcasecmp(a->name, b->name);
-	else
-		return strcmp(a->name, b->name);
+	if (versorder)
+		return strverscmp(a->name, b->name);
+	return strcmp(a->name, b->name);
 }
 
 void
@@ -846,6 +848,12 @@ nochange:
 			goto begin;
 		case SEL_ICASE:
 			icaseorder = !icaseorder;
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
+			goto begin;
+		case SEL_VERS:
+			versorder = !versorder;
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
