@@ -1,45 +1,53 @@
 VERSION = 0.8
-
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
 
 #CPPFLAGS = -DDEBUG
 #CFLAGS = -g
-LDLIBS = -lcurses
 
-DISTFILES = noice.c strlcat.c strlcpy.c strverscmp.c util.h config.def.h\
-    noice.1 Makefile README LICENSE
-OBJ = noice.o strlcat.o strlcpy.o strverscmp.o
-BIN = noice
+NOICELDLIBS = -lcurses
+NOPENLDLIBS =
+NOICEOBJ = noice.o spawn.o strlcat.o strlcpy.o strverscmp.o
+NOPENOBJ = nopen.o spawn.o
+BIN = noice nopen
+MAN = noice.1 nopen.1
 
 all: $(BIN)
 
-$(BIN): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LDLIBS)
+noice: $(NOICEOBJ)
+	$(CC) $(CFLAGS) -o $@ $(NOICEOBJ) $(LDFLAGS) $(NOICELDLIBS)
 
-noice.o: util.h config.h
+nopen: $(NOPENOBJ)
+	$(CC) $(CFLAGS) -o $@ $(NOPENOBJ) $(LDFLAGS) $(NOPENLDLIBS)
+
+noice.o: noiceconf.h util.h
+nopen.o: nopenconf.h util.h
+spawn.o: util.h
 strlcat.o: util.h
 strlcpy.o: util.h
+strverscmp.o: util.h
 
-config.h:
-	cp config.def.h $@
+noiceconf.h:
+	cp noiceconf.def.h $@
+
+nopenconf.h:
+	cp nopenconf.def.h $@
 
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f $(BIN) $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(MANPREFIX)/man1
-	cp -f $(BIN).1 $(DESTDIR)$(MANPREFIX)/man1
+	cp -f $(MAN) $(DESTDIR)$(MANPREFIX)/man1
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/$(BIN)
-	rm -f $(DESTDIR)$(MANPREFIX)/man1/$(BIN).1
+	cd $(DESTDIR)$(PREFIX)/bin && rm -f $(BIN)
+	cd $(DESTDIR)$(MANPREFIX)/man1 && rm -f $(MAN)
 
-dist:
+dist: clean
 	mkdir -p noice-$(VERSION)
-	cp $(DISTFILES) noice-$(VERSION)
-	tar -cf noice-$(VERSION).tar noice-$(VERSION)
-	gzip noice-$(VERSION).tar
-	rm -rf noice-$(VERSION)
+	cp `find . -maxdepth 1 -type f` noice-$(VERSION)
+	tar -c noice-$(VERSION) | gzip > noice-$(VERSION).tar.gz
 
 clean:
-	rm -f $(BIN) $(OBJ) noice-$(VERSION).tar.gz
+	rm -f $(BIN) $(NOICEOBJ) $(NOPENOBJ) noice-$(VERSION).tar.gz
+	rm -rf noice-$(VERSION)

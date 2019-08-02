@@ -1,7 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #include <curses.h>
 #include <dirent.h>
@@ -20,20 +19,11 @@
 
 #include "util.h"
 
-#define NR_ARGS	32
-#define LEN(x) (sizeof(x) / sizeof(*(x)))
 #undef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define ISODD(x) ((x) & 1)
 #define CONTROL(c) ((c) ^ 0x40)
 #define META(c) ((c) ^ 0x80)
-
-struct assoc {
-	char *regex; /* Regex to match on filename */
-	char *file;
-	char *argv[NR_ARGS];
-	regex_t regcomp;
-};
 
 struct cpair {
 	int fg;
@@ -71,7 +61,7 @@ struct key {
 	char *env;       /* Environment variable to run */
 };
 
-#include "config.h"
+#include "noiceconf.h"
 
 struct entry {
 	char name[PATH_MAX];
@@ -167,59 +157,6 @@ xdirname(const char *path)
 	return out;
 }
 
-void
-spawnvp(char *dir, char *file, char *argv[])
-{
-	pid_t pid;
-	int status;
-
-	pid = fork();
-	if (pid == 0) {
-		if (dir != NULL)
-			chdir(dir);
-		execvp(file, argv);
-		_exit(1);
-	} else {
-		/* Ignore interruptions */
-		while (waitpid(pid, &status, 0) == -1)
-			DPRINTF_D(status);
-		DPRINTF_D(pid);
-	}
-}
-
-void
-spawnlp(char *dir, char *file, char *argv0, ...)
-{
-	char *argv[NR_ARGS];
-	va_list ap;
-	int argc;
-
-	va_start(ap, argv0);
-	argv[0] = argv0;
-	for (argc = 1; argv[argc] = va_arg(ap, char *); argc++)
-		;
-	argv[argc] = NULL;
-	va_end(ap);
-	spawnvp(dir, file, argv);
-}
-
-void
-spawnassoc(struct assoc *assoc, char *arg)
-{
-	char *argv[NR_ARGS];
-	int i;
-
-	for (i = 0; assoc->argv[i]; i++) {
-		if (strcmp(assoc->argv[i], "{}") == 0) {
-			argv[i] = arg;
-			continue;
-		}
-		argv[i] = assoc->argv[i];
-	}
-	argv[i] = NULL;
-	spawnvp(NULL, assoc->file, argv);
-}
-
 char *
 xgetenv(char *name, char *fallback)
 {
@@ -229,21 +166,6 @@ xgetenv(char *name, char *fallback)
 		return fallback;
 	value = getenv(name);
 	return value && value[0] ? value : fallback;
-}
-
-struct assoc *
-openwith(char *file)
-{
-	int i;
-
-	for (i = 0; i < LEN(assocs); i++) {
-		if (regexec(&assocs[i].regcomp, file, 0, NULL, 0) == 0) {
-			DPRINTF_S(assocs[i].argv[0]);
-			return &assocs[i];
-		}
-	}
-
-	return NULL;
 }
 
 int
@@ -671,7 +593,6 @@ browse(char *ipath, char *ifilter)
 	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
 	char fltr[LINE_MAX];
 	char *dir, *tmp, *run, *env;
-	struct assoc *assoc;
 	struct stat sb;
 	regex_t re;
 	int r, fd;
@@ -744,13 +665,8 @@ nochange:
 				strlcpy(fltr, ifilter, sizeof(fltr));
 				goto begin;
 			case S_IFREG:
-				assoc = openwith(newpath);
-				if (assoc == NULL) {
-					printmsg("No association");
-					goto nochange;
-				}
 				exitcurses();
-				spawnassoc(assoc, newpath);
+				spawnlp(path, "nopen", "nopen", newpath, (void *)0);
 				initcurses();
 				continue;
 			default:
@@ -869,7 +785,7 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
-			spawnlp(path, run, run, NULL);
+			spawnlp(path, run, run, (void *)0);
 			initcurses();
 			goto begin;
 		case SEL_RUNARG:
@@ -878,7 +794,7 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
-			spawnlp(path, run, run, dents[cur].name, NULL);
+			spawnlp(path, run, run, dents[cur].name, (void *)0);
 			initcurses();
 			goto begin;
 		}
@@ -886,26 +802,8 @@ nochange:
 		if (idletimeout != 0 && idle == idletimeout) {
 			idle = 0;
 			exitcurses();
-			spawnlp(NULL, idlecmd, idlecmd, NULL);
+			spawnlp(NULL, idlecmd, idlecmd, (void *)0);
 			initcurses();
-		}
-	}
-}
-
-void
-initassocs(void)
-{
-	char errbuf[256];
-	int i, r;
-
-	for (i = 0; i < LEN(assocs); i++) {
-		r = regcomp(&assocs[i].regcomp, assocs[i].regex,
-			    REG_NOSUB | REG_EXTENDED | REG_ICASE);
-		if (r != 0) {
-			regerror(r, &assocs[i].regcomp, errbuf, sizeof(errbuf));
-			fprintf(stderr, "invalid regex assocs[%d]: %s: %s\n",
-			        i, assocs[i].regex, errbuf);
-			exit(1);
 		}
 	}
 }
@@ -954,7 +852,6 @@ main(int argc, char *argv[])
 
 	/* Set locale before curses setup */
 	setlocale(LC_ALL, "");
-	initassocs();
 	initcurses();
 	browse(ipath, ifilter);
 	exitcurses();

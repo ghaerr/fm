@@ -1,12 +1,6 @@
 /* See LICENSE file for copyright and license details. */
-#undef strlcat
-size_t strlcat(char *, const char *, size_t);
-#undef strlcpy
-size_t strlcpy(char *, const char *, size_t);
-#undef dprintf
-int dprintf(int, const char *, ...);
-#undef strverscmp
-int strverscmp(const char *, const char *);
+#define LEN(x) (sizeof(x) / sizeof(*(x)))
+#define NR_ARGS	32
 
 #ifdef DEBUG
 #define DEBUG_FD 8
@@ -22,3 +16,14 @@ int strverscmp(const char *, const char *);
 #define DPRINTF_P(x)
 #define DPRINTF_LLU(x)
 #endif /* DEBUG */
+
+#undef strlcat
+size_t strlcat(char *, const char *, size_t);
+#undef strlcpy
+size_t strlcpy(char *, const char *, size_t);
+#undef dprintf
+int dprintf(int, const char *, ...);
+
+int strverscmp(const char *, const char *);
+void spawnvp(char *, char *, char *[]);
+void spawnlp(char *, char *, char *, ...);
