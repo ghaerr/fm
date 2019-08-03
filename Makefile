@@ -7,7 +7,7 @@ MANPREFIX = $(PREFIX)/man
 
 NOICELDLIBS = -lcurses
 NOPENLDLIBS =
-NOICEOBJ = noice.o spawn.o strlcat.o strlcpy.o strverscmp.o
+NOICEOBJ = dprintf.o noice.o spawn.o strlcat.o strlcpy.o strverscmp.o
 NOPENOBJ = nopen.o spawn.o
 BIN = noice nopen
 MAN = noice.1 nopen.1
@@ -20,6 +20,7 @@ noice: $(NOICEOBJ)
 nopen: $(NOPENOBJ)
 	$(CC) $(CFLAGS) -o $@ $(NOPENOBJ) $(LDFLAGS) $(NOPENLDLIBS)
 
+dprintf.o: util.h
 noice.o: noiceconf.h util.h
 nopen.o: nopenconf.h util.h
 spawn.o: util.h

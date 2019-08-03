@@ -11,7 +11,6 @@
 #include <locale.h>
 #include <regex.h>
 #include <signal.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -94,21 +93,6 @@ int idle;
 void printmsg(char *);
 void printwarn(void);
 void printerr(int, char *);
-
-int
-dprintf(int fd, const char *fmt, ...)
-{
-	char buf[BUFSIZ];
-	int r;
-	va_list ap;
-
-	va_start(ap, fmt);
-	r = vsnprintf(buf, sizeof(buf), fmt, ap);
-	if (r > 0)
-		write(fd, buf, r);
-	va_end(ap);
-	return r;
-}
 
 void *
 xmalloc(size_t size)
