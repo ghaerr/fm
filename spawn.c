@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <err.h>
 #include <stdarg.h>
 #include <unistd.h>
 
@@ -14,12 +15,15 @@ spawnvp(char *dir, char *file, char *argv[])
 	int status;
 
 	pid = fork();
-	if (pid == 0) {
+	switch (pid) {
+	case -1:
+		err(1, "fork");
+	case 0:
 		if (dir != NULL)
 			chdir(dir);
 		execvp(file, argv);
 		_exit(1);
-	} else {
+	default:
 		/* Ignore interruptions */
 		while (waitpid(pid, &status, 0) == -1)
 			;
