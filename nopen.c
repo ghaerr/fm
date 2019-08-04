@@ -86,8 +86,7 @@ main(int argc, char *argv[])
 	for (; *argv != NULL; argv++) {
 		struct assoc *assoc;
 
-		assoc = openwith(argv[0]);
-		if (assoc == NULL)
+		if ((assoc = openwith(argv[0])) == NULL)
 			continue;
 		spawnassoc(assoc, argv[0]);
 	}
