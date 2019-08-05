@@ -258,8 +258,6 @@ initcurses(void)
 void
 exitcurses(void)
 {
-	clear();
-	refresh();
 	endwin(); /* Restore terminal */
 }
 
