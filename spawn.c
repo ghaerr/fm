@@ -3,6 +3,7 @@
 #include <sys/wait.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <unistd.h>
 
@@ -24,8 +25,7 @@ spawnvp(char *dir, char *file, char *argv[])
 		execvp(file, argv);
 		_exit(1);
 	default:
-		/* Ignore interruptions */
-		while (waitpid(pid, &status, 0) == -1)
+		while (waitpid(pid, &status, 0) == -1 && errno == EINTR)
 			;
 	}
 }
