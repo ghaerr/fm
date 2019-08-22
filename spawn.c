@@ -44,7 +44,7 @@ spawnlp(char *dir, char *file, char *argv0, ...)
 
 	va_start(ap, argv0);
 	argv[0] = argv0;
-	for (argc = 1; argv[argc] = va_arg(ap, char *); argc++)
+	for (argc = 1; (argv[argc] = va_arg(ap, char *)) != (void *)0; argc++)
 		;
 	argv[argc] = NULL;
 	va_end(ap);
