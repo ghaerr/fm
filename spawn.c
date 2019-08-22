@@ -5,6 +5,7 @@
 #include <err.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "util.h"
@@ -20,8 +21,8 @@ spawnvp(char *dir, char *file, char *argv[])
 	case -1:
 		return -1;
 	case 0:
-		if (dir != NULL)
-			chdir(dir);
+		if (dir != NULL && chdir(dir) == -1)
+			exit(1);
 		execvp(file, argv);
 		_exit(1);
 	default:
