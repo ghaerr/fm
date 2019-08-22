@@ -278,11 +278,11 @@ printwarn(void)
 
 /* Kill curses and display error before exiting */
 void
-printerr(int ret, char *prefix)
+printerr(int r, char *prefix)
 {
 	exitcurses();
 	fprintf(stderr, "%s: %s\n", prefix, strerror(errno));
-	exit(ret);
+	exit(r);
 }
 
 /* Clear the last line */
