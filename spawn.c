@@ -13,7 +13,7 @@ int
 spawnvp(char *dir, char *file, char *argv[])
 {
 	pid_t pid;
-	int status;
+	int status, r;
 
 	pid = fork();
 	switch (pid) {
@@ -25,8 +25,10 @@ spawnvp(char *dir, char *file, char *argv[])
 		execvp(file, argv);
 		_exit(1);
 	default:
-		while (waitpid(pid, &status, 0) == -1 && errno == EINTR)
-			;
+		while ((r = waitpid(pid, &status, 0)) == -1 && errno == EINTR)
+			continue;
+		if (r == -1)
+			return -1;
 		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
 			return -1;
 	}
