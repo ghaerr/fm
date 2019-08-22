@@ -21,7 +21,7 @@ struct assoc {
 #include "nopenconf.h"
 
 void
-spawnassoc(struct assoc *assoc, char *arg)
+run(struct assoc *assoc, char *arg)
 {
 	char *argv[NR_ARGS];
 	int i;
@@ -46,7 +46,6 @@ openwith(char *file)
 		if (regexec(&assocs[i].regcomp, file, 0, NULL, 0) == 0)
 			return &assocs[i];
 	}
-
 	return NULL;
 }
 
@@ -88,7 +87,7 @@ main(int argc, char *argv[])
 
 		if ((assoc = openwith(argv[0])) == NULL)
 			continue;
-		spawnassoc(assoc, argv[0]);
+		run(assoc, argv[0]);
 	}
 	return 0;
 }

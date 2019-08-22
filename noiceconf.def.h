@@ -3,6 +3,8 @@
 #define CURSR " > "
 #define EMPTY "   "
 
+#define NOPENCMD "nopen"
+
 int dirorder    = 0; /* Set to 1 to sort by directory first */
 int mtimeorder  = 0; /* Set to 1 to sort by time modified */
 int icaseorder  = 0; /* Set to 1 to sort by ignoring case */

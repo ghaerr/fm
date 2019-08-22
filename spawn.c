@@ -9,7 +9,7 @@
 
 #include "util.h"
 
-void
+int
 spawnvp(char *dir, char *file, char *argv[])
 {
 	pid_t pid;
@@ -18,7 +18,7 @@ spawnvp(char *dir, char *file, char *argv[])
 	pid = fork();
 	switch (pid) {
 	case -1:
-		err(1, "fork");
+		return -1;
 	case 0:
 		if (dir != NULL)
 			chdir(dir);
@@ -27,10 +27,13 @@ spawnvp(char *dir, char *file, char *argv[])
 	default:
 		while (waitpid(pid, &status, 0) == -1 && errno == EINTR)
 			;
+		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+			return -1;
 	}
+	return 0;
 }
 
-void
+int
 spawnlp(char *dir, char *file, char *argv0, ...)
 {
 	char *argv[NR_ARGS];
@@ -43,5 +46,5 @@ spawnlp(char *dir, char *file, char *argv0, ...)
 		;
 	argv[argc] = NULL;
 	va_end(ap);
-	spawnvp(dir, file, argv);
+	return spawnvp(dir, file, argv);
 }

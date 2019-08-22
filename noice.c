@@ -650,8 +650,12 @@ nochange:
 				goto begin;
 			case S_IFREG:
 				exitcurses();
-				spawnlp(path, "nopen", "nopen", newpath, (void *)0);
+				r = spawnlp(path, NOPENCMD, NOPENCMD, newpath, (void *)0);
 				initcurses();
+				if (r == -1) {
+					printmsg("failed to execute " NOPENCMD);
+					goto nochange;
+				}
 				continue;
 			default:
 				printmsg("Unsupported file");

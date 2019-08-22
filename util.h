@@ -24,5 +24,5 @@ size_t strlcat(char *, const char *, size_t);
 #undef strlcpy
 size_t strlcpy(char *, const char *, size_t);
 int strverscmp(const char *, const char *);
-void spawnvp(char *, char *, char *[]);
-void spawnlp(char *, char *, char *, ...);
+int spawnvp(char *, char *, char *[]);
+int spawnlp(char *, char *, char *, ...);
