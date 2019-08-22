@@ -650,10 +650,11 @@ nochange:
 				goto begin;
 			case S_IFREG:
 				exitcurses();
-				r = spawnlp(path, NOPENCMD, NOPENCMD, newpath, (void *)0);
+				run = xgetenv("NOPEN", NOPENCMD);
+				r = spawnlp(path, run, run, newpath, (void *)0);
 				initcurses();
 				if (r == -1) {
-					printmsg("failed to execute " NOPENCMD);
+					printmsg("Failed to execute plumber");
 					goto nochange;
 				}
 				continue;
