@@ -2,9 +2,6 @@ VERSION = 0.8
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
 
-#CPPFLAGS = -DDEBUG
-#CFLAGS = -g
-
 NOICELDLIBS = -lcurses
 NOPENLDLIBS =
 NOICEOBJ = dprintf.o noice.o spawn.o strlcat.o strlcpy.o strverscmp.o
