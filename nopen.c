@@ -2,7 +2,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include <err.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
