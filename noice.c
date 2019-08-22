@@ -650,7 +650,7 @@ nochange:
 				goto begin;
 			case S_IFREG:
 				exitcurses();
-				run = xgetenv("NOPEN", NOPENCMD);
+				run = xgetenv("NOPEN", NOPEN);
 				r = spawnlp(path, run, run, newpath, (void *)0);
 				initcurses();
 				if (r == -1) {
