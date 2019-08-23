@@ -22,7 +22,7 @@ struct rule {
 
 char *argv0;
 
-void
+int
 run(struct rule *rule, char *arg)
 {
 	char *argv[NR_ARGS];
@@ -36,7 +36,7 @@ run(struct rule *rule, char *arg)
 		argv[i] = rule->argv[i];
 	}
 	argv[i] = NULL;
-	spawnvp(NULL, rule->file, argv);
+	return spawnvp(NULL, rule->file, argv);
 }
 
 struct rule *
@@ -79,6 +79,8 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
+	int r;
+
 	ARGBEGIN {
 	default:
 		usage();
@@ -87,13 +89,15 @@ main(int argc, char *argv[])
 	if (argc == 0)
 		usage();
 
+	r = 0;
 	parserules();
 	for (; *argv != NULL; argv++) {
 		struct rule *rule;
 
 		if ((rule = matchrule(argv[0])) == NULL)
 			continue;
-		run(rule, argv[0]);
+		if (run(rule, argv[0]) == -1)
+			r = 1;
 	}
-	return 0;
+	return r;
 }
