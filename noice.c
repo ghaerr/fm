@@ -95,33 +95,11 @@ void printwarn(void);
 void printerr(int, char *);
 
 void *
-xmalloc(size_t size)
-{
-	void *p;
-
-	p = malloc(size);
-	if (p == NULL)
-		printerr(1, "malloc");
-	return p;
-}
-
-void *
 xrealloc(void *p, size_t size)
 {
 	p = realloc(p, size);
 	if (p == NULL)
 		printerr(1, "realloc");
-	return p;
-}
-
-char *
-xstrdup(const char *s)
-{
-	char *p;
-
-	p = strdup(s);
-	if (p == NULL)
-		printerr(1, "strdup");
 	return p;
 }
 
