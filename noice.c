@@ -55,7 +55,7 @@ struct key {
 	int sym;         /* Key pressed */
 	enum action act; /* Action */
 	char *run;       /* Program to run */
-	char *env;       /* Environment variable to run */
+	char *env;       /* Environment variable override */
 };
 
 #include "noiceconf.h"
