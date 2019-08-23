@@ -11,6 +11,7 @@
 #include <locale.h>
 #include <regex.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -90,16 +91,16 @@ int idle;
  * '------
  */
 
-void printmsg(char *);
-void printwarn(void);
-void printerr(int, char *);
+void info(char *, ...);
+void warn(char *, ...);
+void fatal(char *, ...);
 
 void *
 xrealloc(void *p, size_t size)
 {
 	p = realloc(p, size);
 	if (p == NULL)
-		printerr(1, "realloc");
+		fatal("realloc");
 	return p;
 }
 
@@ -114,7 +115,7 @@ xdirname(const char *path)
 	strlcpy(tmp, path, sizeof(tmp));
 	p = dirname(tmp);
 	if (p == NULL)
-		printerr(1, "dirname");
+		fatal("dirname");
 	strlcpy(out, p, sizeof(out));
 	return out;
 }
@@ -143,7 +144,7 @@ setfilter(regex_t *regex, char *filter)
 		if (len > sizeof(errbuf))
 			len = sizeof(errbuf);
 		regerror(r, regex, errbuf, len);
-		printmsg(errbuf);
+		info("%s", errbuf);
 	}
 	return r;
 }
@@ -241,33 +242,51 @@ exitcurses(void)
 
 /* Messages show up at the bottom */
 void
-printmsg(char *msg)
+info(char *fmt, ...)
 {
+	char buf[LINE_MAX];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
 	move(LINES - 1, 0);
-	printw("%s\n", msg);
+	printw("%s\n", buf);
 }
 
 /* Display warning as a message */
 void
-printwarn(void)
+warn(char *fmt, ...)
 {
-	printmsg(strerror(errno));
+	char buf[LINE_MAX];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+	move(LINES - 1, 0);
+	printw("%s: %s\n", buf, strerror(errno));
 }
 
 /* Kill curses and display error before exiting */
 void
-printerr(int r, char *prefix)
+fatal(char *fmt, ...)
 {
+	va_list ap;
+
 	exitcurses();
-	fprintf(stderr, "%s: %s\n", prefix, strerror(errno));
-	exit(r);
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	fprintf(stderr, ": %s\n", strerror(errno));
+	va_end(ap);
+	exit(1);
 }
 
 /* Clear the last line */
 void
 clearprompt(void)
 {
-	printmsg("");
+	info("");
 }
 
 /* Print prompt on the last line */
@@ -275,7 +294,7 @@ void
 printprompt(char *str)
 {
 	clearprompt();
-	printw(str);
+	info("%s", str);
 }
 
 int
@@ -431,7 +450,7 @@ dentfill(char *path, struct entry **dents,
 		mkpath(path, dp->d_name, newpath, sizeof(newpath));
 		r = lstat(newpath, &sb);
 		if (r == -1)
-			printerr(1, "lstat");
+			fatal("lstat");
 		(*dents)[n].mode = sb.st_mode;
 		(*dents)[n].t = sb.st_mtime;
 		n++;
@@ -440,7 +459,7 @@ dentfill(char *path, struct entry **dents,
 	/* Should never be null */
 	r = closedir(dirp);
 	if (r == -1)
-		printerr(1, "closedir");
+		fatal("closedir");
 	return n;
 }
 
@@ -565,7 +584,7 @@ browse(char *ipath, char *ifilter)
 begin:
 	r = populate(path, oldpath, fltr);
 	if (r == -1) {
-		printwarn();
+		warn("populate");
 		goto nochange;
 	}
 
@@ -584,7 +603,7 @@ nochange:
 				goto nochange;
 			dir = xdirname(path);
 			if (canopendir(dir) == 0) {
-				printwarn();
+				warn("canopendir");
 				goto nochange;
 			}
 			/* Save history */
@@ -604,12 +623,12 @@ nochange:
 			/* Get path info */
 			fd = open(newpath, O_RDONLY | O_NONBLOCK);
 			if (fd == -1) {
-				printwarn();
+				warn("open");
 				goto nochange;
 			}
 			r = fstat(fd, &sb);
 			if (r == -1) {
-				printwarn();
+				warn("fstat");
 				close(fd);
 				goto nochange;
 			}
@@ -619,7 +638,7 @@ nochange:
 			switch (sb.st_mode & S_IFMT) {
 			case S_IFDIR:
 				if (canopendir(newpath) == 0) {
-					printwarn();
+					warn("canopendir");
 					goto nochange;
 				}
 				strlcpy(path, newpath, sizeof(path));
@@ -632,12 +651,12 @@ nochange:
 				r = spawnlp(path, run, run, newpath, (void *)0);
 				initcurses();
 				if (r == -1) {
-					printmsg("Failed to execute plumber");
+					info("Failed to execute plumber");
 					goto nochange;
 				}
 				continue;
 			default:
-				printmsg("Unsupported file");
+				info("Unsupported file");
 				goto nochange;
 			}
 		case SEL_FLTR:
@@ -689,7 +708,7 @@ nochange:
 			}
 			mkpath(path, tmp, newpath, sizeof(newpath));
 			if (canopendir(newpath) == 0) {
-				printwarn();
+				warn("canopendir");
 				goto nochange;
 			}
 			strlcpy(path, newpath, sizeof(path));
@@ -704,7 +723,7 @@ nochange:
 				goto nochange;
 			}
 			if (canopendir(tmp) == 0) {
-				printwarn();
+				warn("canopendir");
 				goto nochange;
 			}
 			strlcpy(path, tmp, sizeof(path));
