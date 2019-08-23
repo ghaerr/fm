@@ -18,7 +18,7 @@ nopen: $(NOPENOBJ)
 	$(CC) $(CFLAGS) -o $@ $(NOPENOBJ) $(LDFLAGS) $(NOPENLDLIBS)
 
 dprintf.o: util.h
-noice.o: noiceconf.h util.h
+noice.o: arg.h noiceconf.h util.h
 nopen.o: nopenconf.h util.h
 spawn.o: util.h
 strlcat.o: util.h

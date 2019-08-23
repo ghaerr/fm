@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "arg.h"
 #include "util.h"
 
 #define ISODD(x) ((x) & 1)
@@ -68,6 +69,7 @@ struct entry {
 
 /* Global context */
 struct entry *dents;
+char *argv0;
 int ndents, cur;
 int idle;
 
@@ -774,9 +776,9 @@ nochange:
 }
 
 void
-usage(char *argv0)
+usage(void)
 {
-	fprintf(stderr, "usage: %s [dir]\n", argv0);
+	fprintf(stderr, "usage: %s [-c] [dir]\n", argv0);
 	exit(1);
 }
 
@@ -786,8 +788,16 @@ main(int argc, char *argv[])
 	char cwd[PATH_MAX], *ipath;
 	char *ifilter;
 
-	if (argc > 2)
-		usage(argv[0]);
+	ARGBEGIN {
+	case 'c':
+		usecolor = 1;
+		break;
+	default:
+		usage();
+	} ARGEND
+
+	if (argc > 1)
+		usage();
 
 	/* Confirm we are in a terminal */
 	if (!isatty(0) || !isatty(1)) {
@@ -799,8 +809,8 @@ main(int argc, char *argv[])
 		showhidden = 1;
 	initfilter(showhidden, &ifilter);
 
-	if (argv[1] != NULL) {
-		ipath = argv[1];
+	if (argv[0] != NULL) {
+		ipath = argv[0];
 	} else {
 		ipath = getcwd(cwd, sizeof(cwd));
 		if (ipath == NULL)
