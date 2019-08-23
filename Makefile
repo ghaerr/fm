@@ -19,7 +19,7 @@ nopen: $(NOPENOBJ)
 
 dprintf.o: util.h
 noice.o: arg.h noiceconf.h util.h
-nopen.o: nopenconf.h util.h
+nopen.o: arg.h nopenconf.h util.h
 spawn.o: util.h
 strlcat.o: util.h
 strlcpy.o: util.h

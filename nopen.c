@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "arg.h"
 #include "util.h"
 
 struct assoc {
@@ -18,6 +19,8 @@ struct assoc {
 };
 
 #include "nopenconf.h"
+
+char *argv0;
 
 void
 run(struct assoc *assoc, char *arg)
@@ -67,7 +70,7 @@ initassocs(void)
 }
 
 void
-usage(char *argv0)
+usage(void)
 {
 	fprintf(stderr, "usage: %s file...\n", argv0);
 	exit(1);
@@ -76,10 +79,14 @@ usage(char *argv0)
 int
 main(int argc, char *argv[])
 {
-	if (argc == 1)
-		usage(argv[0]);
-	argc--;
-	argv++;
+	ARGBEGIN {
+	default:
+		usage();
+	} ARGEND
+
+	if (argc == 0)
+		usage();
+
 	initassocs();
 	for (; *argv != NULL; argv++) {
 		struct assoc *assoc;
