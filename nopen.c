@@ -11,7 +11,7 @@
 #include "arg.h"
 #include "util.h"
 
-struct assoc {
+struct rule {
 	char *regex; /* Regex to match on filename */
 	char *file;
 	char *argv[NR_ARGS];
@@ -23,47 +23,47 @@ struct assoc {
 char *argv0;
 
 void
-run(struct assoc *assoc, char *arg)
+run(struct rule *rule, char *arg)
 {
 	char *argv[NR_ARGS];
 	int i;
 
-	for (i = 0; assoc->argv[i]; i++) {
-		if (strcmp(assoc->argv[i], "{}") == 0) {
+	for (i = 0; rule->argv[i]; i++) {
+		if (strcmp(rule->argv[i], "{}") == 0) {
 			argv[i] = arg;
 			continue;
 		}
-		argv[i] = assoc->argv[i];
+		argv[i] = rule->argv[i];
 	}
 	argv[i] = NULL;
-	spawnvp(NULL, assoc->file, argv);
+	spawnvp(NULL, rule->file, argv);
 }
 
-struct assoc *
-openwith(char *file)
+struct rule *
+matchrule(char *file)
 {
 	int i;
 
-	for (i = 0; i < LEN(assocs); i++) {
-		if (regexec(&assocs[i].regcomp, file, 0, NULL, 0) == 0)
-			return &assocs[i];
+	for (i = 0; i < LEN(rules); i++) {
+		if (regexec(&rules[i].regcomp, file, 0, NULL, 0) == 0)
+			return &rules[i];
 	}
 	return NULL;
 }
 
 void
-initassocs(void)
+parserules(void)
 {
 	char errbuf[256];
 	int i, r;
 
-	for (i = 0; i < LEN(assocs); i++) {
-		r = regcomp(&assocs[i].regcomp, assocs[i].regex,
+	for (i = 0; i < LEN(rules); i++) {
+		r = regcomp(&rules[i].regcomp, rules[i].regex,
 			    REG_NOSUB | REG_EXTENDED | REG_ICASE);
 		if (r != 0) {
-			regerror(r, &assocs[i].regcomp, errbuf, sizeof(errbuf));
-			fprintf(stderr, "invalid regex assocs[%d]: %s: %s\n",
-			        i, assocs[i].regex, errbuf);
+			regerror(r, &rules[i].regcomp, errbuf, sizeof(errbuf));
+			fprintf(stderr, "invalid regex rules[%d]: %s: %s\n",
+			        i, rules[i].regex, errbuf);
 			exit(1);
 		}
 	}
@@ -87,13 +87,13 @@ main(int argc, char *argv[])
 	if (argc == 0)
 		usage();
 
-	initassocs();
+	parserules();
 	for (; *argv != NULL; argv++) {
-		struct assoc *assoc;
+		struct rule *rule;
 
-		if ((assoc = openwith(argv[0])) == NULL)
+		if ((rule = matchrule(argv[0])) == NULL)
 			continue;
-		run(assoc, argv[0]);
+		run(rule, argv[0]);
 	}
 	return 0;
 }
