@@ -18,8 +18,6 @@
 
 #include "util.h"
 
-#undef MIN
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define ISODD(x) ((x) & 1)
 #define CONTROL(c) ((c) ^ 0x40)
 #define META(c) ((c) ^ 0x80)
