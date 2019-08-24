@@ -91,7 +91,7 @@ main(int argc, char *argv[])
 
 	r = 0;
 	parserules();
-	for (; *argv != NULL; argv++) {
+	for (; argv[0] != NULL; argv++) {
 		struct rule *rule;
 
 		if ((rule = matchrule(argv[0])) == NULL)
