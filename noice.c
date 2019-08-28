@@ -77,7 +77,7 @@ int idle;
 /*
  * Layout:
  * .---------
- * | cwd: /mnt/path
+ * | /mnt/path
  * |
  * |    file0
  * |    file1
