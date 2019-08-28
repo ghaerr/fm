@@ -661,7 +661,7 @@ nochange:
 			}
 		case SEL_FLTR:
 			/* Read filter */
-			printprompt("filter: ");
+			printprompt("/");
 			tmp = readln();
 			if (tmp == NULL)
 				tmp = ifilter;
