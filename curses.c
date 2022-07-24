@@ -135,10 +135,8 @@ void echo()
 {
 }
 
-/* clear screen */
-void erase()
+void timeout(int t)
 {
-    printf("\e[H\e[2J");
 }
 
 /* cursor on/off */
@@ -147,8 +145,10 @@ void curs_set(int visibility)
     printf("\e[?25%c", visibility? 'h': 'l');
 }
 
-void timeout(int t)
+/* clear screen */
+void erase()
 {
+    printf("\e[H\e[2J");
 }
 
 void move(int y, int x)

@@ -49,7 +49,6 @@ struct key bindings[] = {
 	{ KEY_RIGHT,      SEL_GOIN },
 	/* Filter */
 	{ '/',            SEL_FLTR },
-	{ '&',            SEL_FLTR },
 	/* Next */
 	{ KEY_DOWN,       SEL_NEXT },
 	{ MOUSE_WHEEL_DOWN,SEL_NEXT },

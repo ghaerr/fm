@@ -1,6 +1,7 @@
-# File manager for UNIX and ELKS
+# Tiny file manager for UNIX and ELKS
 
 This project is forked from `noice` (https://git.2f30.org/noice/), a small file browser.
+Thanks to lostd and sin at `2f30.org` for a well-written program with which to start from.
 
 The goal of this project is to produce a very small file manager/browser
 that can run identically on UNIX ANSI terminals, as well as the ELKS 16-bit
@@ -15,6 +16,7 @@ This is a work in progress.
 # How do I compile/run it?
 
 For UNIX, type `make`.
+
 For ELKS, type `make -f Makefile.elks`.
 
 The resulting output executable is `fm`.
@@ -23,3 +25,5 @@ The resulting output executable is `fm`.
 
 The file [HOWTO](https://github.com/ghaerr/fm/blob/master/HOWTO) describes
 the keystrokes to browse a filesystem.
+
+For more information, refer to the man page.

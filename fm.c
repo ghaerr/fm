@@ -20,16 +20,6 @@
 #include "util.h"
 #include "unikey.h"
 
-#if !ELKS
-#define REGEX   1
-#endif
-
-#if REGEX
-#include <regex.h>
-#else
-typedef int regex_t;
-#endif
-
 #if ELKS
 char *realpath(const char *path, char resolved[PATH_MAX]);
 #define MAX_NAME    20
@@ -151,50 +141,98 @@ xgetenv(char *name, char *fallback)
 	return value && value[0] ? value : fallback;
 }
 
-int
-setfilter(regex_t *regex, char *filter)
+/*
+ * Routine to see if a text string is matched by a wildcard pattern.
+ * Returns TRUE if the text is matched, or FALSE if it is not matched
+ * or if the pattern is invalid.
+ *  *		matches zero or more characters
+ *  ?		matches a single character
+ *  [abc]	matches 'a', 'b' or 'c'
+ *  \c		quotes character c
+ *  Adapted from code written by Ingo Wilken.
+ *  Adapted from ELKS sash shell.
+ */
+static int match(char *text, char *pattern)
 {
-#if REGEX
-	char errbuf[LINE_MAX];
-	size_t len;
-	int r;
+	char	*retrypat;
+	char	*retrytxt;
+	int	ch;
+	int	found;
 
-	r = regcomp(regex, filter, REG_NOSUB | REG_EXTENDED | REG_ICASE);
-	if (r != 0) {
-		len = COLS;
-		if (len > sizeof(errbuf))
-			len = sizeof(errbuf);
-		regerror(r, regex, errbuf, len);
-		info("%s", errbuf);
+	if (!showhidden && text[0] == '.')
+		return FALSE;
+	if (pattern[0] == '\0')
+		return TRUE;
+
+	retrypat = NULL;
+	retrytxt = NULL;
+
+	while (*text || *pattern) {
+		ch = *pattern++;
+
+		switch (ch) {
+			case '*':
+				retrypat = pattern;
+				retrytxt = text;
+				break;
+
+			case '[':
+				found = FALSE;
+				while ((ch = *pattern++) != ']') {
+					if (ch == '\\')
+						ch = *pattern++;
+					if (ch == '\0')
+						return FALSE;
+					if (*text == ch)
+						found = TRUE;
+				}
+				if (!found) {
+					pattern = retrypat;
+					text = ++retrytxt;
+				}
+				/* fall into next case */
+
+			case '?':
+				if (*text++ == '\0')
+					return FALSE;
+				break;
+
+			case '\\':
+				ch = *pattern++;
+				if (ch == '\0')
+					return FALSE;
+				/* fall into next case */
+
+			default:
+				if (*text == ch) {
+					if (*text)
+						text++;
+					break;
+				}
+				if (*text) {
+					pattern = retrypat;
+					text = ++retrytxt;
+					break;
+				}
+				return FALSE;
+		}
+
+		if (pattern == NULL)
+			return FALSE;
 	}
-	return r;
-#else
-    return 0;
-#endif
+	return TRUE;
 }
 
 void
-freefilter(regex_t *regex)
+initfilter(char **ifilter)
 {
-#if REGEX
-	regfree(regex);
-#endif
-}
-
-void
-initfilter(int dot, char **ifilter)
-{
-	*ifilter = dot ? "." : "^[^.]";
+	*ifilter = "";
 }
 
 int
-visible(regex_t *regex, char *file)
+visible(char *filter, char *file)
 {
-#if REGEX
-	return regexec(regex, file, 0, NULL, 0) == 0;
-#else
-    return 1;
-#endif
+    return match(file, filter);
 }
 
 int
@@ -334,6 +372,7 @@ printprompt(char *str)
 {
 	clearprompt();
 	info("%s", str);
+    fflush(stdout);
 }
 
 int
@@ -418,6 +457,7 @@ mkpath(char *dir, char *name, char *out, size_t n)
 	return out;
 }
 
+
 /*
  * Get the time to be used for a file.
  * This is down to the minute for new files, but only the date for old files.
@@ -495,7 +535,7 @@ printent(struct entry *ent, int active)
 
 int
 dentfill(char *path, struct entry **dents,
-	 int (*filter)(regex_t *, char *), regex_t *re)
+	 int (*filter)(char *, char *), char *filterstring)
 {
 	char newpath[PATH_MAX];
 	DIR *dirp;
@@ -512,7 +552,7 @@ dentfill(char *path, struct entry **dents,
 		if (strcmp(dp->d_name, ".") == 0 ||
 		    strcmp(dp->d_name, "..") == 0)
 			continue;
-		if (filter(re, dp->d_name) == 0)
+		if (filter(filterstring, dp->d_name) == 0)
 			continue;
 		*dents = xrealloc(*dents, (n + 1) * sizeof(**dents));
 		strlcpy((*dents)[n].name, dp->d_name, sizeof((*dents)[n].name));
@@ -562,16 +602,8 @@ dentfind(struct entry *dents, int n, char *cwd, char *path)
 int
 populate(char *path, char *oldpath, char *fltr)
 {
-	regex_t re;
-	int r;
-
 	/* Can fail when permissions change while browsing */
 	if (canopendir(path) == 0)
-		return -1;
-
-	/* Search filter */
-	r = setfilter(&re, fltr);
-	if (r != 0)
 		return -1;
 
 	dentfree(dents);
@@ -579,8 +611,7 @@ populate(char *path, char *oldpath, char *fltr)
 	ndents = 0;
 	dents = NULL;
 
-	ndents = dentfill(path, &dents, visible, &re);
-	freefilter(&re);
+	ndents = dentfill(path, &dents, visible, fltr);
 	if (ndents == 0)
 		return 0; /* Empty result */
 
@@ -652,9 +683,6 @@ browse(char *ipath, char *ifilter)
 	char *dir, *tmp, *run, *env;
 	struct stat sb;
 	int r, fd, shellscript, c;
-#if REGEX
-	regex_t re;
-#endif
 
 	strlcpy(path, ipath, sizeof(path));
 	strlcpy(fltr, ifilter, sizeof(fltr));
@@ -751,25 +779,18 @@ nochange:
 				info("Unsupported file");
 				goto nochange;
 			}
-#if REGEX
 		case SEL_FLTR:
 			/* Read filter */
 			printprompt("/");
 			tmp = readln();
 			if (tmp == NULL)
 				tmp = ifilter;
-			/* Check and report regex errors */
-			r = setfilter(&re, tmp);
-			if (r != 0)
-				goto nochange;
-			freefilter(&re);
 			strlcpy(fltr, tmp, sizeof(fltr));
 			DPRINTF_S(fltr);
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto begin;
-#endif
         case 'a' ... 'z':
             for (r = 0; r < ndents; r++) {
                 if (++cur >= ndents)
@@ -836,7 +857,7 @@ nochange:
 			goto begin;
 		case SEL_TOGGLEDOT:
 			showhidden ^= 1;
-			initfilter(showhidden, &ifilter);
+			initfilter(&ifilter);
 			strlcpy(fltr, ifilter, sizeof(fltr));
 			goto begin;
         case SEL_SSIZE:
@@ -937,7 +958,7 @@ main(int argc, char *argv[])
 
 	if (getuid() == 0)
 		showhidden = 1;
-	initfilter(showhidden, &ifilter);
+	initfilter(&ifilter);
 
 	if (argv[0] != NULL) {
 		ipath = argv[0];
