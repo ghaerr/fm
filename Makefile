@@ -2,9 +2,9 @@ VERSION = 0.8
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
 
-CFLAGS += -DUNIX=1
 TTYOBJ = unikey.o runes.o
-FMOBJ = fm.o spawn.o strverscmp.o curses.o realpath.o $(TTYOBJ)
+EXTRAOBJ += realpath.o strlcpy.o strlcat.o
+FMOBJ = fm.o spawn.o strverscmp.o curses.o $(TTYOBJ) $(EXTRAOBJ)
 NOPENOBJ = nopen.o spawn.o
 BIN = fm
 MAN = fm.1 nopen.1

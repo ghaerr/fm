@@ -9,7 +9,8 @@ Linux operating system.
 
 As such, the `ncurses` library dependency is removed, as all terminal
 sequences are output using ANSI x3.64 standard, including color output
-sequences as well as arrow key and mouse wheel input.
+sequences as well as arrow key and mouse wheel input parsing, using
+a small set of included routines.
 
 This is a work in progress.
 

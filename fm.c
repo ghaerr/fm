@@ -19,66 +19,32 @@
 #include "arg.h"
 #include "util.h"
 #include "unikey.h"
+#include "fm.h"
 
-#if ELKS
-char *realpath(const char *path, char resolved[PATH_MAX]);
-#define MAX_NAME    20
-#else
-#define MAX_NAME    32
+#if !ELKS
 #include <locale.h>
 #endif
 
 #define ISODD(x) ((x) & 1)
-#define CONTROL(c) ((c) ^ 0x40)
-#define META(c) ((c) ^ 0x80)
-
-struct cpair {
-	int fg;
-	int bg;
-};
-
-/* Supported actions */
-enum action {
-	SEL_QUIT = 1,
-	SEL_BACK,
-	SEL_GOIN,
-	SEL_FLTR,
-	SEL_NEXT,
-	SEL_PREV,
-	SEL_PGDN,
-	SEL_PGUP,
-	SEL_HOME,
-	SEL_END,
-	SEL_CD,
-	SEL_CDHOME,
-	SEL_TOGGLEDOT,
-	SEL_DSORT,
-	SEL_SSIZE,
-	SEL_MTIME,
-	SEL_ICASE,
-	SEL_VERS,
-	SEL_REDRAW,
-	SEL_RUN,
-	SEL_RUNARG,
-};
-
-struct key {
-	int sym;         /* Key pressed */
-	enum action act; /* Action */
-	char *run;       /* Program to run */
-	char *env;       /* Environment variable override */
-};
-
-#include "fm.h"
 
 struct entry {
-	char name[PATH_MAX];
-	mode_t mode;
-	time_t t;
-    unsigned long size;
+    time_t t;
+    unsigned long size; /* 4GB max file size on UNIX/ELKS */
+    mode_t mode;
+    char name[NAME_MAX];
 };
 
 /* Global context */
+int dirorder    = 0; /* Set to 1 to sort by directory first */
+int sizeorder   = 0; /* Set to 1 to sort by file size */
+int mtimeorder  = 0; /* Set to 1 to sort by time modified */
+int icaseorder  = 0; /* Set to 1 to sort by ignoring case */
+int versorder   = 0; /* Set to 1 to sort by version number */
+int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
+int showhidden  = 0; /* Set to 1 to show hidden files by default */
+int usecolor    = 1; /* Set to 1 to enable color attributes */
+char *idlecmd   = "rain"; /* The screensaver program */
+
 struct entry *dents;
 char *argv0;
 int ndents, cur;
@@ -94,7 +60,7 @@ int idle;
  * |  > file2
  * |    file3
  * |    file4
- *      ...
+ * |    ...
  * |    filen
  * |
  * | Permission denied
@@ -249,7 +215,8 @@ dircmp(mode_t a, mode_t b)
 }
 
 /* return -1/0/1 based on sign of x */
-static int sign(long x)
+int
+sign(long x)
 {
     return (x > 0) - (x < 0);
 }
@@ -320,8 +287,8 @@ exitcurses(void)
 void
 info(char *fmt, ...)
 {
-	char buf[LINE_MAX];
 	va_list ap;
+	char buf[LINE_MAX];
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
@@ -334,8 +301,8 @@ info(char *fmt, ...)
 void
 warn(char *fmt, ...)
 {
-	char buf[LINE_MAX];
 	va_list ap;
+	char buf[LINE_MAX];
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
@@ -457,14 +424,14 @@ mkpath(char *dir, char *name, char *out, size_t n)
 	return out;
 }
 
-
 /*
  * Get the time to be used for a file.
  * This is down to the minute for new files, but only the date for old files.
  * The string is returned from a static buffer, and so is overwritten for
  * each call.
  */
-static char *timestring(time_t t)
+char *
+timestring(time_t t)
 {
     time_t  now;
     char  *str;
@@ -492,7 +459,7 @@ printent(struct entry *ent, int active)
 	unsigned int len = COLS - strlen(CURSR) - 1;
 	char cm = 0;
 	int attr = 0;
-	char name[PATH_MAX];
+	char name[NAME_MAX];
 
 	/* Copy name locally */
 	strlcpy(name, ent->name, sizeof(name));
@@ -527,8 +494,8 @@ printent(struct entry *ent, int active)
 	}
 
 	attron(attr);
-    name[MAX_NAME] = '\0';
-	printw("%s%*s %9lu  %s\n", active ? CURSR : EMPTY, -MAX_NAME, name, ent->size,
+    name[NAME_MAX-1] = '\0';
+	printw("%s%*s %9lu  %s\n", active ? CURSR : EMPTY, -NAME_COLS, name, ent->size,
         timestring(ent->t));
 	attroff(attr);
 }
@@ -537,11 +504,11 @@ int
 dentfill(char *path, struct entry **dents,
 	 int (*filter)(char *, char *), char *filterstring)
 {
-	char newpath[PATH_MAX];
 	DIR *dirp;
 	struct dirent *dp;
 	struct stat sb;
 	int r, n = 0;
+	char newpath[PATH_MAX];
 
 	dirp = opendir(path);
 	if (dirp == NULL)
@@ -678,11 +645,11 @@ int tolower(int c)
 void
 browse(char *ipath, char *ifilter)
 {
-	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
-	char fltr[LINE_MAX];
 	char *dir, *tmp, *run, *env;
 	struct stat sb;
 	int r, fd, shellscript, c;
+	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
+	char fltr[LINE_MAX];
 
 	strlcpy(path, ipath, sizeof(path));
 	strlcpy(fltr, ifilter, sizeof(fltr));

@@ -5,16 +5,6 @@
 
 #define NOPEN "more"
 
-int dirorder    = 0; /* Set to 1 to sort by directory first */
-int sizeorder  = 0;  /* Set to 1 to sort by file size */
-int mtimeorder  = 0; /* Set to 1 to sort by time modified */
-int icaseorder  = 0; /* Set to 1 to sort by ignoring case */
-int versorder   = 0; /* Set to 1 to sort by version number */
-int idletimeout = 0; /* Screensaver timeout in seconds, 0 to disable */
-int showhidden  = 0; /* Set to 1 to show hidden files by default */
-int usecolor    = 1; /* Set to 1 to enable color attributes */
-char *idlecmd   = "rain"; /* The screensaver program */
-
 /* See curs_attr(3) for valid video attributes */
 #define CURSR_ATTR A_NORMAL
 #define DIR_ATTR   A_NORMAL | COLOR_PAIR(4)
@@ -22,6 +12,14 @@ char *idlecmd   = "rain"; /* The screensaver program */
 #define SOCK_ATTR  A_NORMAL | COLOR_PAIR(1)
 #define FIFO_ATTR  A_NORMAL | COLOR_PAIR(5)
 #define EXEC_ATTR  A_NORMAL | COLOR_PAIR(2)
+
+#define CONTROL(c)  ((c) ^ 0x40)
+#define META(c)     ((c) ^ 0x80)
+
+struct cpair {
+	int fg;
+	int bg;
+};
 
 /* Colors to use with COLOR_PAIR(n) as attributes */
 struct cpair pairs[] = {
@@ -33,6 +31,38 @@ struct cpair pairs[] = {
 	{ COLOR_BLUE,    -1 },
 	{ COLOR_MAGENTA, -1 },
 	{ COLOR_CYAN,    -1 },
+};
+
+/* Supported actions */
+enum action {
+	SEL_QUIT = 1,
+	SEL_BACK,
+	SEL_GOIN,
+	SEL_FLTR,
+	SEL_NEXT,
+	SEL_PREV,
+	SEL_PGDN,
+	SEL_PGUP,
+	SEL_HOME,
+	SEL_END,
+	SEL_CD,
+	SEL_CDHOME,
+	SEL_TOGGLEDOT,
+	SEL_DSORT,
+	SEL_SSIZE,
+	SEL_MTIME,
+	SEL_ICASE,
+	SEL_VERS,
+	SEL_REDRAW,
+	SEL_RUN,
+	SEL_RUNARG,
+};
+
+struct key {
+	int sym;         /* Key pressed */
+	enum action act; /* Action */
+	char *run;       /* Program to run */
+	char *env;       /* Environment variable override */
 };
 
 struct key bindings[] = {

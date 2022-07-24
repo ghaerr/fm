@@ -15,12 +15,22 @@ int strverscmp(const char *, const char *);
 int spawnvp(char *, char *, char *[]);
 int spawnlp(char *, char *, char *, ...);
 
-#ifndef PATH_MAX
-#define PATH_MAX 80
+#undef PATH_MAX
+#undef LINE_MAX
+#undef NAME_MAX
+
+#define PATH_MAX    80
+#define LINE_MAX    80
+
+#if ELKS
+#define NAME_MAX    15
+#define NAME_COLS   20
+#else
+#define NAME_MAX    79
+#define NAME_COLS   32
 #endif
-#ifndef LINE_MAX
-#define LINE_MAX 80
-#endif
+
+char *realpath(const char *path, char resolved[PATH_MAX]);
 
 #ifdef DEBUG
 #define DEBUG_FD 8

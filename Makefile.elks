@@ -42,7 +42,7 @@ clean:
 
 CFLBASE += -mcmodel=small -mno-segment-relocation-stuff
 #CFLBASE += -mcmodel=medium -msegment-relocation-stuff -ffunction-sections
-CFLAGS += -DUNIX=1 -DELKS=1
+CFLAGS += -DELKS=1
 #CFLAGS += -Wno-pointer-sign
 #CFLAGS += -Wno-misleading-indentation -Wno-unused-function -Wno-unused-variable
 #CFLAGS += -Wno-compare-distinct-pointer-types

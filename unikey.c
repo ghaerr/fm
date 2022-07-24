@@ -12,11 +12,13 @@
 #include "unikey.h"
 
 #define ANSI_UTF8       0       /* =1 to decode UTF-9 in readansi() */
+#define DEBUG           0       /* =1 for keyname() */
 #define ESC             27
 #define unreachable
 
 static char scroll_reverse = 0; /* report reversed scroll wheel direction */
 
+#if DEBUG
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 struct unikeyname unikeynames[] = {
     kBackSpace,	"kBackSpace",
@@ -121,8 +123,8 @@ char *keyname(int k)
     }
     return NULL;
 }
+#endif
 
-#if 0//ELKS
 static int small_atoi(const char *s)
 {
     int n = 0;
@@ -133,9 +135,6 @@ static int small_atoi(const char *s)
         n = n * 10 + *s++ - '0';
     return n;
 }
-#else
-#define small_atoi(buf)     ((int)strtol(buf, 0, 10))
-#endif
 
 /*
  * Convert from single ANSI or UTF-8 sequence to unicode key or char value,
