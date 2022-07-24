@@ -49,10 +49,10 @@ CFLAGS += -DUNIX=1 -DELKS=1
 #CFLAGS += -Wno-invalid-source-encoding
 LDFLAGS += -maout-heap=0xffff
 
-OBJS = noice.o spawn.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
+OBJS = fm.o spawn.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
 OBJS += unikey.o runes.o
 
 fm: $(OBJS)
-	$(LD) $(LDFLAGS) -o fm $(OBJS) $(LDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 	cp fm $(TOPDIR)/elkscmd/rootfs_template/root
 

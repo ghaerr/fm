@@ -2,36 +2,28 @@ VERSION = 0.8
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
 
-#NOICELDLIBS = -lcurses
-NOPENLDLIBS =
 CFLAGS += -DUNIX=1
 TTYOBJ = unikey.o runes.o
-NOICEOBJ = noice.o spawn.o strverscmp.o curses.o realpath.o $(TTYOBJ)
+FMOBJ = fm.o spawn.o strverscmp.o curses.o realpath.o $(TTYOBJ)
 NOPENOBJ = nopen.o spawn.o
-BIN = fm nopen
-MAN = noice.1 nopen.1
+BIN = fm
+MAN = fm.1 nopen.1
 
 all: $(BIN)
 
-fm: $(NOICEOBJ)
-	$(CC) $(CFLAGS) -o $@ $(NOICEOBJ) $(LDFLAGS) $(NOICELDLIBS)
+fm: $(FMOBJ)
+	$(CC) $(CFLAGS) -o $@ $(FMOBJ) $(LDFLAGS)
 
 nopen: $(NOPENOBJ)
 	$(CC) $(CFLAGS) -o $@ $(NOPENOBJ) $(LDFLAGS) $(NOPENLDLIBS)
 
+fm.o: arg.h fm.h util.h
 dprintf.o: util.h
-noice.o: arg.h noiceconf.h util.h
 nopen.o: arg.h nopenconf.h util.h
 spawn.o: util.h
 strlcat.o: util.h
 strlcpy.o: util.h
 strverscmp.o: util.h
-
-#noiceconf.h:
-#	cp noiceconf.def.h $@
-
-nopenconf.h:
-	cp nopenconf.def.h $@
 
 install: all
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
@@ -43,11 +35,5 @@ uninstall:
 	cd $(DESTDIR)$(PREFIX)/bin && rm -f $(BIN)
 	cd $(DESTDIR)$(MANPREFIX)/man1 && rm -f $(MAN)
 
-dist: clean
-	mkdir -p noice-$(VERSION)
-	cp `find . -maxdepth 1 -type f` noice-$(VERSION)
-	tar -c noice-$(VERSION) | gzip > noice-$(VERSION).tar.gz
-
 clean:
-	rm -f $(BIN) $(NOICEOBJ) $(NOPENOBJ) noice-$(VERSION).tar.gz
-	rm -rf noice-$(VERSION)
+	rm -f $(BIN) *.o

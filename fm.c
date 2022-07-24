@@ -79,7 +79,7 @@ struct key {
 	char *env;       /* Environment variable override */
 };
 
-#include "noiceconf.h"
+#include "fm.h"
 
 struct entry {
 	char name[PATH_MAX];
