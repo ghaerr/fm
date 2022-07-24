@@ -1,9 +1,9 @@
 /* See LICENSE file for copyright and license details. */
-#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "util.h"
+#define isdigit(c)  ((c) >= '0' && (c) <= '9')
 
 int
 strverscmp(const char *str1, const char *str2)
@@ -16,12 +16,12 @@ strverscmp(const char *str1, const char *str2)
 		unsigned char c1 = str1[i1];
 		unsigned char c2 = str2[i2];
 		if (isdigit(c1) && isdigit(c2)) {
-			unsigned long long int num1;
-			unsigned long long int num2;
+			unsigned long num1;
+			unsigned long num2;
 			char *end1;
 			char *end2;
-			num1 = strtoull(str1 + i1, &end1, 10);
-			num2 = strtoull(str2 + i2, &end2, 10);
+			num1 = strtoul(str1 + i1, &end1, 10);
+			num2 = strtoul(str2 + i2, &end2, 10);
 			DPRINTF_LLU(num1);
 			DPRINTF_LLU(num2);
 			if (num1 < num2)

@@ -2,23 +2,41 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <curses.h>
+#include "curses.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <libgen.h>
 #include <limits.h>
-#include <locale.h>
-#include <regex.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "arg.h"
 #include "util.h"
+#include "unikey.h"
+
+#if !ELKS
+#define REGEX   1
+#endif
+
+#if REGEX
+#include <regex.h>
+#else
+typedef int regex_t;
+#endif
+
+#if ELKS
+char *realpath(const char *path, char resolved[PATH_MAX]);
+#define MAX_NAME    20
+#else
+#define MAX_NAME    32
+#include <locale.h>
+#endif
 
 #define ISODD(x) ((x) & 1)
 #define CONTROL(c) ((c) ^ 0x40)
@@ -45,6 +63,7 @@ enum action {
 	SEL_CDHOME,
 	SEL_TOGGLEDOT,
 	SEL_DSORT,
+	SEL_SSIZE,
 	SEL_MTIME,
 	SEL_ICASE,
 	SEL_VERS,
@@ -66,6 +85,7 @@ struct entry {
 	char name[PATH_MAX];
 	mode_t mode;
 	time_t t;
+    unsigned long size;
 };
 
 /* Global context */
@@ -134,6 +154,7 @@ xgetenv(char *name, char *fallback)
 int
 setfilter(regex_t *regex, char *filter)
 {
+#if REGEX
 	char errbuf[LINE_MAX];
 	size_t len;
 	int r;
@@ -147,12 +168,17 @@ setfilter(regex_t *regex, char *filter)
 		info("%s", errbuf);
 	}
 	return r;
+#else
+    return 0;
+#endif
 }
 
 void
 freefilter(regex_t *regex)
 {
+#if REGEX
 	regfree(regex);
+#endif
 }
 
 void
@@ -164,7 +190,11 @@ initfilter(int dot, char **ifilter)
 int
 visible(regex_t *regex, char *file)
 {
+#if REGEX
 	return regexec(regex, file, 0, NULL, 0) == 0;
+#else
+    return 1;
+#endif
 }
 
 int
@@ -180,6 +210,12 @@ dircmp(mode_t a, mode_t b)
 		return 1;
 }
 
+/* return -1/0/1 based on sign of x */
+static int sign(long x)
+{
+    return (x > 0) - (x < 0);
+}
+
 int
 entrycmp(const void *va, const void *vb)
 {
@@ -190,8 +226,10 @@ entrycmp(const void *va, const void *vb)
 			return dircmp(a->mode, b->mode);
 	}
 
+	if (sizeorder)
+		return sign(a->size - b->size);
 	if (mtimeorder)
-		return b->t - a->t;
+		return sign(b->t - a->t);
 	if (icaseorder)
 		return strcasecmp(a->name, b->name);
 	if (versorder)
@@ -251,7 +289,7 @@ info(char *fmt, ...)
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	move(LINES - 1, 0);
-	printw("%s\n", buf);
+	printw("%s", buf);
 }
 
 /* Display warning as a message */
@@ -286,7 +324,8 @@ fatal(char *fmt, ...)
 void
 clearprompt(void)
 {
-	info("");
+	move(LINES - 1, 0);
+    clrtoeol();
 }
 
 /* Print prompt on the last line */
@@ -320,7 +359,8 @@ nextsel(char **run, char **env)
 	c = xgetch();
 	if (c == 033)
 		c = META(xgetch());
-
+	if (c >= 'a' && c <= 'z')
+		return c;
 	for (i = 0; i < LEN(bindings); i++)
 		if (c == bindings[i].sym) {
 			*run = bindings[i].run;
@@ -378,13 +418,41 @@ mkpath(char *dir, char *name, char *out, size_t n)
 	return out;
 }
 
+/*
+ * Get the time to be used for a file.
+ * This is down to the minute for new files, but only the date for old files.
+ * The string is returned from a static buffer, and so is overwritten for
+ * each call.
+ */
+static char *timestring(time_t t)
+{
+    time_t  now;
+    char  *str;
+    static char buf[26];
+
+    time(&now);
+
+    str = ctime(&t);
+
+    strcpy(buf, &str[4]);
+    buf[12] = '\0';
+
+    if ((t > now) || (t < now - 180*24*60L*60)) {
+        buf[7] = ' ';
+        strcpy(&buf[8], &str[20]);
+        buf[12] = '\0';
+    }
+
+    return buf;
+}
+
 void
 printent(struct entry *ent, int active)
 {
-	char name[PATH_MAX];
 	unsigned int len = COLS - strlen(CURSR) - 1;
 	char cm = 0;
 	int attr = 0;
+	char name[PATH_MAX];
 
 	/* Copy name locally */
 	strlcpy(name, ent->name, sizeof(name));
@@ -419,7 +487,9 @@ printent(struct entry *ent, int active)
 	}
 
 	attron(attr);
-	printw("%s%s\n", active ? CURSR : EMPTY, name);
+    name[MAX_NAME] = '\0';
+	printw("%s%*s %9lu  %s\n", active ? CURSR : EMPTY, -MAX_NAME, name, ent->size,
+        timestring(ent->t));
 	attroff(attr);
 }
 
@@ -453,6 +523,7 @@ dentfill(char *path, struct entry **dents,
 			fatal("lstat");
 		(*dents)[n].mode = sb.st_mode;
 		(*dents)[n].t = sb.st_mtime;
+		(*dents)[n].size = sb.st_size;
 		n++;
 	}
 
@@ -568,6 +639,11 @@ redraw(char *path)
 	}
 }
 
+int tolower(int c)
+{
+    return (unsigned) (c - 'A') < 26u ? c + ('a' - 'A') : c;
+}
+
 void
 browse(char *ipath, char *ifilter)
 {
@@ -575,8 +651,10 @@ browse(char *ipath, char *ifilter)
 	char fltr[LINE_MAX];
 	char *dir, *tmp, *run, *env;
 	struct stat sb;
+	int r, fd, shellscript, c;
+#if REGEX
 	regex_t re;
-	int r, fd;
+#endif
 
 	strlcpy(path, ipath, sizeof(path));
 	strlcpy(fltr, ifilter, sizeof(fltr));
@@ -591,7 +669,7 @@ begin:
 	for (;;) {
 		redraw(path);
 nochange:
-		switch (nextsel(&run, &env)) {
+		switch (c = nextsel(&run, &env)) {
 		case SEL_QUIT:
 			dentfree(dents);
 			return;
@@ -621,7 +699,7 @@ nochange:
 			DPRINTF_S(newpath);
 
 			/* Get path info */
-			fd = open(newpath, O_RDONLY | O_NONBLOCK);
+			fd = open(newpath, O_RDONLY /*| O_NONBLOCK*/);
 			if (fd == -1) {
 				warn("open");
 				goto nochange;
@@ -632,6 +710,16 @@ nochange:
 				close(fd);
 				goto nochange;
 			}
+            if (((sb.st_mode & S_IFMT) == S_IFREG) && (sb.st_mode & S_IXUSR)) {
+                int n, i;
+                char buf[16];
+                shellscript = 1;
+                n = read(fd, buf, sizeof(buf));
+                for (i=0; i < n; i++) {
+                    if (buf[i] < 9 || buf[i] >= 127)
+                        shellscript = 0;
+                }
+            } else shellscript = 0;
 			close(fd);
 			DPRINTF_U(sb.st_mode);
 
@@ -646,12 +734,16 @@ nochange:
 				strlcpy(fltr, ifilter, sizeof(fltr));
 				goto begin;
 			case S_IFREG:
+                if ((sb.st_mode & S_IXUSR) && !shellscript) {
+                    info("Executable");
+                    goto nochange;
+                }
 				exitcurses();
 				run = xgetenv("NOPEN", NOPEN);
 				r = spawnlp(path, run, run, newpath, (void *)0);
 				initcurses();
 				if (r == -1) {
-					info("Failed to execute plumber");
+					info("Failed to execute %s", run);
 					goto nochange;
 				}
 				continue;
@@ -659,6 +751,7 @@ nochange:
 				info("Unsupported file");
 				goto nochange;
 			}
+#if REGEX
 		case SEL_FLTR:
 			/* Read filter */
 			printprompt("/");
@@ -676,6 +769,15 @@ nochange:
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto begin;
+#endif
+        case 'a' ... 'z':
+            for (r = 0; r < ndents; r++) {
+                if (++cur >= ndents)
+                    cur = 0;
+                if ((tolower(dents[cur].name[0])) == c)
+                    break;
+            }
+            break;
 		case SEL_NEXT:
 			if (cur < ndents - 1)
 				cur++;
@@ -702,8 +804,9 @@ nochange:
 			/* Read target dir */
 			printprompt("chdir: ");
 			tmp = readln();
+            clearprompt();
 			if (tmp == NULL) {
-				clearprompt();
+				//clearprompt();
 				goto nochange;
 			}
 			mkpath(path, tmp, newpath, sizeof(newpath));
@@ -736,8 +839,16 @@ nochange:
 			initfilter(showhidden, &ifilter);
 			strlcpy(fltr, ifilter, sizeof(fltr));
 			goto begin;
+        case SEL_SSIZE:
+            sizeorder = !sizeorder;
+            mtimeorder = 0;
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
+			goto begin;
 		case SEL_MTIME:
 			mtimeorder = !mtimeorder;
+            sizeorder = 0;
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
@@ -844,8 +955,10 @@ main(int argc, char *argv[])
 		exit(1);
 	}
 
+#if !ELKS
 	/* Set locale before curses setup */
 	setlocale(LC_ALL, "");
+#endif
 	initcurses();
 	browse(ipath, ifilter);
 	exitcurses();

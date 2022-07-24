@@ -6,6 +6,7 @@
 
 #undef dprintf
 int dprintf(int, const char *, ...);
+//void dprintf(const char *, ...);
 #undef strlcat
 size_t strlcat(char *, const char *, size_t);
 #undef strlcpy
@@ -13,6 +14,13 @@ size_t strlcpy(char *, const char *, size_t);
 int strverscmp(const char *, const char *);
 int spawnvp(char *, char *, char *[]);
 int spawnlp(char *, char *, char *, ...);
+
+#ifndef PATH_MAX
+#define PATH_MAX 80
+#endif
+#ifndef LINE_MAX
+#define LINE_MAX 80
+#endif
 
 #ifdef DEBUG
 #define DEBUG_FD 8

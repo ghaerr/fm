@@ -2,16 +2,18 @@ VERSION = 0.8
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
 
-NOICELDLIBS = -lcurses
+#NOICELDLIBS = -lcurses
 NOPENLDLIBS =
-NOICEOBJ = dprintf.o noice.o spawn.o strlcat.o strlcpy.o strverscmp.o
+CFLAGS += -DUNIX=1
+TTYOBJ = unikey.o runes.o
+NOICEOBJ = noice.o spawn.o strverscmp.o curses.o realpath.o $(TTYOBJ)
 NOPENOBJ = nopen.o spawn.o
-BIN = noice nopen
+BIN = fm nopen
 MAN = noice.1 nopen.1
 
 all: $(BIN)
 
-noice: $(NOICEOBJ)
+fm: $(NOICEOBJ)
 	$(CC) $(CFLAGS) -o $@ $(NOICEOBJ) $(LDFLAGS) $(NOICELDLIBS)
 
 nopen: $(NOPENOBJ)
@@ -25,8 +27,8 @@ strlcat.o: util.h
 strlcpy.o: util.h
 strverscmp.o: util.h
 
-noiceconf.h:
-	cp noiceconf.def.h $@
+#noiceconf.h:
+#	cp noiceconf.def.h $@
 
 nopenconf.h:
 	cp nopenconf.def.h $@

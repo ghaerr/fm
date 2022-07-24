@@ -1,0 +1,29 @@
+Z       quit
+bs      out
+DEL     out
+left    out
+ret     in
+right   in
+^N      next
+down    next
+up      prev
+^P      prev
+^U      page up
+^D      page dn
+/       filter
+&       filter
+^       home (meta-<)
+H       home
+$       end (meta->)
+B       end
+C       cd
+~       cd home
+D       dir sort
+S       size sort
+T       time sort
+V       version sort
+.       show hidden
+I       ignore case
+!       run sh
+E       run vi
+M       run more

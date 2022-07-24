@@ -1,0 +1,58 @@
+# External ELKS application Makefile
+TOPDIR = /Users/greg/net/elks-gh
+
+###############################################################################
+include $(TOPDIR)/.config
+INCLUDES    = -I$(TOPDIR)/include -I$(TOPDIR)/libc/include -I$(TOPDIR)/elks/include
+TINYPRINTF  = $(ELKSCMD_DIR)/lib/tiny_vfprintf.o
+
+# Compiler variables for ELKS.
+CC      = ia16-elf-gcc
+CFLBASE = -fno-inline -melks-libc -mtune=i8086 -Wall -Os
+CFLAGS  = $(CFLBASE) $(WARNINGS) $(LOCALFLAGS) $(INCLUDES)
+LD      = ia16-elf-gcc
+LDFLAGS = $(CFLBASE)
+AS      = ia16-elf-as
+ASFLAGS = -mtune=i8086 --32-segelf
+AR      = ia16-elf-ar
+
+# Standard compilation rules.
+.S.s:
+	$(CC) -E -traditional $(INCLUDES) $(CCDEFS) -o $*.s $<
+
+.S.o:
+	$(CC) -E -traditional $(INCLUDES) $(CCDEFS) -o $*.tmp $<
+	$(AS) $(ASFLAGS) -o $*.o $*.tmp
+	rm -f $*.tmp
+
+.s.o:
+	$(AS) $(ASFLAGS) -o $*.o $<
+
+.c.o:
+	$(CC) $(CFLAGS) -c -o $*.o $<
+
+###############################################################################
+
+PRGS = fm
+
+all: $(LIBS) $(PRGS)
+
+clean:
+	rm *.o *.a fm
+
+CFLBASE += -mcmodel=small -mno-segment-relocation-stuff
+#CFLBASE += -mcmodel=medium -msegment-relocation-stuff -ffunction-sections
+CFLAGS += -DUNIX=1 -DELKS=1
+#CFLAGS += -Wno-pointer-sign
+#CFLAGS += -Wno-misleading-indentation -Wno-unused-function -Wno-unused-variable
+#CFLAGS += -Wno-compare-distinct-pointer-types
+#CFLAGS += -Wno-invalid-source-encoding
+LDFLAGS += -maout-heap=0xffff
+
+OBJS = noice.o spawn.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
+OBJS += unikey.o runes.o
+
+fm: $(OBJS)
+	$(LD) $(LDFLAGS) -o fm $(OBJS) $(LDLIBS)
+	cp fm $(TOPDIR)/elkscmd/rootfs_template/root
+
