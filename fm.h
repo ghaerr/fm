@@ -3,7 +3,7 @@
 #define CURSR " > "
 #define EMPTY "   "
 
-#define NOPEN "more"
+#define PAGER "more"
 
 /* See curs_attr(3) for valid video attributes */
 #define CURSR_ATTR A_NORMAL
@@ -54,6 +54,7 @@ enum action {
 	SEL_ICASE,
 	SEL_VERS,
 	SEL_REDRAW,
+	SEL_HELP,
 	SEL_RUN,
 	SEL_RUNARG,
 };
@@ -119,6 +120,7 @@ struct key bindings[] = {
 	/* Toggle sort by version number */
 	{ 'V',            SEL_VERS },
 	{ CONTROL('L'),   SEL_REDRAW },
+	{ '?',            SEL_HELP },
 	/* Run command */
 	{ '!',            SEL_RUN, "sh", "SHELL" },
 	/* Run command with argument */

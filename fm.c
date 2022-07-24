@@ -27,6 +27,14 @@
 
 #define ISODD(x) ((x) & 1)
 
+#define REV     "\e[7m"
+#define OFF     "\e[0m"
+#define SP      OFF " " REV
+#define HELP    REV \
+    "Z quit" SP "C cd" SP "D dir first" SP "S size sort" SP "T time sort" SP \
+    ". show hidden" SP "/ filter" \
+    OFF
+
 struct entry {
     time_t t;
     unsigned long size; /* 4GB max file size on UNIX/ELKS */
@@ -281,6 +289,8 @@ void
 exitcurses(void)
 {
 	endwin(); /* Restore terminal */
+    move(LINES-1, 0);
+    clrtoeol();
 }
 
 /* Messages show up at the bottom */
@@ -288,12 +298,13 @@ void
 info(char *fmt, ...)
 {
 	va_list ap;
-	char buf[LINE_MAX];
+	char buf[128];
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	move(LINES - 1, 0);
+    clrtoeol();
 	printw("%s", buf);
 }
 
@@ -648,6 +659,7 @@ browse(char *ipath, char *ifilter)
 	char *dir, *tmp, *run, *env;
 	struct stat sb;
 	int r, fd, shellscript, c;
+    int once = 1;
 	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
 	char fltr[LINE_MAX];
 
@@ -663,6 +675,10 @@ begin:
 
 	for (;;) {
 		redraw(path);
+        if (once) {
+            info("\e[7m? for help\e[0m");
+            once = 0;
+        }
 nochange:
 		switch (c = nextsel(&run, &env)) {
 		case SEL_QUIT:
@@ -730,11 +746,11 @@ nochange:
 				goto begin;
 			case S_IFREG:
                 if ((sb.st_mode & S_IXUSR) && !shellscript) {
-                    info("Executable");
+                    info("Binary file");
                     goto nochange;
                 }
 				exitcurses();
-				run = xgetenv("NOPEN", NOPEN);
+				run = xgetenv("PAGER", PAGER);
 				r = spawnlp(path, run, run, newpath, (void *)0);
 				initcurses();
 				if (r == -1) {
@@ -827,62 +843,51 @@ nochange:
 			initfilter(&ifilter);
 			strlcpy(fltr, ifilter, sizeof(fltr));
 			goto begin;
-        case SEL_SSIZE:
-            sizeorder = !sizeorder;
-            mtimeorder = 0;
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
-			goto begin;
+		case SEL_SSIZE:
+			sizeorder = !sizeorder;
+			mtimeorder = 0;
+			goto saveandbegin;
 		case SEL_MTIME:
 			mtimeorder = !mtimeorder;
-            sizeorder = 0;
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
-			goto begin;
+			sizeorder = 0;
+			goto saveandbegin;
 		case SEL_DSORT:
 			dirorder = !dirorder;
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
-			goto begin;
+			goto saveandbegin;
 		case SEL_ICASE:
 			icaseorder = !icaseorder;
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
-			goto begin;
+			goto saveandbegin;
 		case SEL_VERS:
 			versorder = !versorder;
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
-			goto begin;
+			goto saveandbegin;
 		case SEL_REDRAW:
+			goto saveandbegin;
+		case SEL_HELP:
+			info(HELP);
+			fflush(stdout);
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
-			goto begin;
+			goto nochange;
 		case SEL_RUN:
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
 			spawnlp(path, run, run, (void *)0);
 			initcurses();
-			goto begin;
+			goto saveandbegin;
 		case SEL_RUNARG:
-			/* Save current */
-			if (ndents > 0)
-				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			run = xgetenv(env, run);
 			exitcurses();
 			spawnlp(path, run, run, dents[cur].name, (void *)0);
 			initcurses();
+			goto saveandbegin;
+		saveandbegin:
+			/* Save current */
+			if (ndents > 0)
+				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto begin;
 		}
+
 		/* Screensaver */
 		if (idletimeout != 0 && idle == idletimeout) {
 			idle = 0;

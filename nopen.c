@@ -18,7 +18,7 @@ struct rule {
 	regex_t regcomp;
 };
 
-#include "nopenconf.h"
+#include "nopen.h"
 
 char *argv0;
 

@@ -1,20 +1,21 @@
 Z       quit
+?       help
 bs      out
 DEL     out
 left    out
-ret     in
 right   in
+ret     in
 ^N      next
 down    next
 up      prev
 ^P      prev
-^U      page up
-^D      page dn
+^U      pageup
+^D      pagedn
+^L      redraw
 /       filter
-^       home (meta-<)
-H       home
-$       end (meta->)
-B       end
+^       top
+H       top
+$       bottom
 C       cd
 ~       cd home
 D       dir sort
