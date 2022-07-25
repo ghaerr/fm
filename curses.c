@@ -173,7 +173,7 @@ void printw(char *fmt, ...)
 int getch()
 {
     int e, n;
-    int mx, my, status;
+    int mx, my, modkeys, status;
     char buf[32];
 
     fflush(stdout);
@@ -183,9 +183,12 @@ int getch()
         //printf("KBD %x (%d)\n", e, n);
         return e;
     }
-    if ((n = ansi_to_mouse(buf, n, &mx, &my, &status)) > 0) {
-        if (status & (MOUSE_WHEEL_UP | MOUSE_WHEEL_DOWN))
-            return status & (MOUSE_WHEEL_UP | MOUSE_WHEEL_DOWN);
+    if ((n = ansi_to_unimouse(buf, n, &mx, &my, &modkeys, &status)) != -1) {
+        switch (n) {
+        case kMouseWheelDown:
+        case kMouseWheelUp:
+            return n;
+        }
     }
     return -1;
 }

@@ -12,7 +12,7 @@
 #include "unikey.h"
 
 #define ANSI_UTF8       0       /* =1 to decode UTF-9 in readansi() */
-#define DEBUG           0       /* =1 for keyname() */
+#define DEBUG           1       /* =1 for keyname() */
 #define ESC             27
 #define unreachable
 
@@ -21,96 +21,108 @@ static char scroll_reverse = 0; /* report reversed scroll wheel direction */
 #if DEBUG
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 struct unikeyname unikeynames[] = {
-    kBackSpace,	"kBackSpace",
-    kTab,   	"kTab",
-    kEscKey,	"kEscKey",
-    kDel,   	"kDel",
-    kUpArrow,	"kUpArrow",
-    kDownArrow,	"kDownArrow",
-    kLeftArrow,	"kLeftArrow",
-    kRightArrow,"kRightArrow",
-    kInsert,	"kInsert",
-    kDelete,	"kDelete",
-    kHome,  	"kHome",
-    kEnd,   	"kEnd",
-    kPageUp,	"kPageUp",
-    kPageDown,	"kPageDown",
-    kAltA,  	"kAltA",
-    kAltB,  	"kAltB",
-    kAltC,  	"kAltC",
-    kAltD,  	"kAltD",
-    kAltE,  	"kAltE",
-    kAltF,  	"kAltF",
-    kAltG,  	"kAltG",
-    kAltH,  	"kAltH",
-    kAltI,  	"kAltI",
-    kAltJ,  	"kAltJ",
-    kAltK,  	"kAltK",
-    kAltL,  	"kAltL",
-    kAltM,  	"kAltM",
-    kAltN,  	"kAltN",
-    kAltO,  	"kAltO",
-    kAltP,  	"kAltP",
-    kAltQ,  	"kAltQ",
-    kAltR,  	"kAltR",
-    kAltS,  	"kAltS",
-    kAltT,  	"kAltT",
-    kAltU,  	"kAltU",
-    kAltV,  	"kAltV",
-    kAltW,  	"kAltW",
-    kAltX,  	"kAltX",
-    kAltY,  	"kAltY",
-    kAltZ,  	"kAltZ",
-    kAlt0,      "kAlt0",
-    kAlt1,      "kAlt1",
-    kAlt2,      "kAlt2",
-    kAlt3,      "kAlt3",
-    kAlt4,      "kAlt4",
-    kAlt5,      "kAlt5",
-    kAlt6,      "kAlt6",
-    kAlt7,      "kAlt7",
-    kAlt8,      "kAlt8",
-    kAlt9,      "kAlt9",
-    kF1,    	"kF1",
-    kF2,    	"kF2",
-    kF3,    	"kF3",
-    kF4,    	"kF4",
-    kF5,    	"kF5",
-    kF6,    	"kF6",
-    kF7,    	"kF7",
-    kF8,    	"kF8",
-    kF9,    	"kF9",
-    kF10,   	"kF10",
-    kF11,   	"kF11",
-    kF12,   	"kF12",
-    kCtrlF1,	"kCtrlF1",
-    kCtrlF2,	"kCtrlF2",
-    kCtrlF3,	"kCtrlF3",
-    kCtrlF4,	"kCtrlF4",
-    kCtrlF5,	"kCtrlF5",
-    kCtrlF6,	"kCtrlF6",
-    kCtrlF7,	"kCtrlF7",
-    kCtrlF8,	"kCtrlF8",
-    kCtrlF9,	"kCtrlF9",
-    kCtrlF10,	"kCtrlF10",
-    kCtrlF11,	"kCtrlF11",
-    kCtrlF12,	"kCtrlF12",
-    kAltF1, 	"kAltF1",
-    kAltF2, 	"kAltF2",
-    kAltF3, 	"kAltF3",
-    kAltF4, 	"kAltF4",
-    kAltF5, 	"kAltF5",
-    kAltF6, 	"kAltF6",
-    kAltF7, 	"kAltF7",
-    kAltF8, 	"kAltF8",
-    kAltF9, 	"kAltF9",
-    kAltF10,	"kAltF10",
-    kAltF11,	"kAltF11",
-    kAltF12,    "kAltF12",
+    kBackSpace,         "kBackSpace",
+    kTab,               "kTab",
+    kEscKey,            "kEscKey",
+    kDel,               "kDel",
+    kUpArrow,           "kUpArrow",
+    kDownArrow,         "kDownArrow",
+    kLeftArrow,         "kLeftArrow",
+    kRightArrow,        "kRightArrow",
+    kInsert,            "kInsert",
+    kDelete,            "kDelete",
+    kHome,              "kHome",
+    kEnd,               "kEnd",
+    kPageUp,            "kPageUp",
+    kPageDown,          "kPageDown",
+    kMouseLeftDown,     "kMouseLeftDown",
+    kMouseMiddleDown,   "kMouseMiddleDown",
+    kMouseRightDown,    "kMouseRightDown",
+    kMouseLeftUp,       "kMouseLeftUp",
+    kMouseMiddleUp,     "kMouseMiddleUp",
+    kMouseRightUp,      "kMouseRightUp",
+    kMouseLeftDrag,     "kMouseLeftDrag",
+    kMouseMiddleDrag,   "kMouseMiddleDrag",
+    kMouseRightDrag,    "kMouseRightDrag",
+    kMouseWheelUp,      "kMouseWheelUp",
+    kMouseWheelDown,    "kMouseWheelDown",
+    kMouseMotion,       "kMouseMotion",
+    kF1,                "kF1",
+    kF2,                "kF2",
+    kF3,                "kF3",
+    kF4,                "kF4",
+    kF5,                "kF5",
+    kF6,                "kF6",
+    kF7,                "kF7",
+    kF8,                "kF8",
+    kF9,                "kF9",
+    kF10,               "kF10",
+    kF11,               "kF11",
+    kF12,               "kF12",
+    kCtrlF1,            "kCtrlF1",
+    kCtrlF2,            "kCtrlF2",
+    kCtrlF3,            "kCtrlF3",
+    kCtrlF4,            "kCtrlF4",
+    kCtrlF5,            "kCtrlF5",
+    kCtrlF6,            "kCtrlF6",
+    kCtrlF7,            "kCtrlF7",
+    kCtrlF8,            "kCtrlF8",
+    kCtrlF9,            "kCtrlF9",
+    kCtrlF10,           "kCtrlF10",
+    kCtrlF11,           "kCtrlF11",
+    kCtrlF12,           "kCtrlF12",
+    kAltF1,             "kAltF1",
+    kAltF2,             "kAltF2",
+    kAltF3,             "kAltF3",
+    kAltF4,             "kAltF4",
+    kAltF5,             "kAltF5",
+    kAltF6,             "kAltF6",
+    kAltF7,             "kAltF7",
+    kAltF8,             "kAltF8",
+    kAltF9,             "kAltF9",
+    kAltF10,            "kAltF10",
+    kAltF11,            "kAltF11",
+    kAltF12,            "kAltF12",
+    kAltA,              "kAltA",
+    kAltB,              "kAltB",
+    kAltC,              "kAltC",
+    kAltD,              "kAltD",
+    kAltE,              "kAltE",
+    kAltF,              "kAltF",
+    kAltG,              "kAltG",
+    kAltH,              "kAltH",
+    kAltI,              "kAltI",
+    kAltJ,              "kAltJ",
+    kAltK,              "kAltK",
+    kAltL,              "kAltL",
+    kAltM,              "kAltM",
+    kAltN,              "kAltN",
+    kAltO,              "kAltO",
+    kAltP,              "kAltP",
+    kAltQ,              "kAltQ",
+    kAltR,              "kAltR",
+    kAltS,              "kAltS",
+    kAltT,              "kAltT",
+    kAltU,              "kAltU",
+    kAltV,              "kAltV",
+    kAltW,              "kAltW",
+    kAltX,              "kAltX",
+    kAltY,              "kAltY",
+    kAltZ,              "kAltZ",
+    kAlt0,              "kAlt0",
+    kAlt1,              "kAlt1",
+    kAlt2,              "kAlt2",
+    kAlt3,              "kAlt3",
+    kAlt4,              "kAlt4",
+    kAlt5,              "kAlt5",
+    kAlt6,              "kAlt6",
+    kAlt7,              "kAlt7",
+    kAlt8,              "kAlt8",
+    kAlt9,              "kAlt9",
     0, 0
 };
 
-char *keyname(int k)
+char *unikeyname(int k)
 {
     int i;
     static char name[16];
@@ -137,10 +149,11 @@ static int small_atoi(const char *s)
 }
 
 /*
- * Convert from single ANSI or UTF-8 sequence to unicode key or char value,
- * including single byte ASCII values (0x00 <= ASCII <= 0x7f).
+ * Check and convert from single ANSI or UTF-8 keyboard sequence
+ * to unicode key or char value, including single byte ASCII values
+ * (0x00 <= ASCII <= 0x7f).
  * Will also decode UTF-8 into single UCS-2 character.
- * Returns -1 if not ASCII or ANSI keyboard sequence (mouse or DSR).
+ * Returns -1 if not ASCII or ANSI keyboard sequence (e.g. mouse or DSR).
  */
 int ansi_to_unikey(char *buf, int n)
 {
@@ -548,7 +561,7 @@ static int getparm(char *buf, int n)
 #define AMSI_MOUSE_WHEEL_DOWN    0x01   /* otherwise up */
 #define ANSI_MOUSE_BUTTON_UP     0x80   /* otherwise down */
 
-const char *str_ansi_mouse_event(int e) {
+const char *describemouseevent(int e) {
   static char buf[32];
   sprintf(buf, "%02x", e);
   if (e & 0x10) strcat(buf, " ctrl");
@@ -573,7 +586,7 @@ const char *str_ansi_mouse_event(int e) {
         strcat(buf, " right");
         break;
       default:
-        unreachable;
+        break;
     }
     if (e & 0x20) {
       strcat(buf, " motion");
@@ -586,76 +599,46 @@ const char *str_ansi_mouse_event(int e) {
   return buf;
 }
 
-const char *str_tui_mouse_event(int e) {
-  static char buf[32];
-  sprintf(buf, "%02x", e);
-  if (e & MOUSE_MOD_CTRL) strcat(buf, " ctrl");
-  if (e & MOUSE_MOD_ALT) strcat(buf, " alt");
-  if (e & MOUSE_MOD_SHIFT) strcat(buf, " shift");
-  if (e & MOUSE_WHEEL_UP) {
-    strcat(buf, " wheel up");
-  } else if (e & MOUSE_WHEEL_DOWN) {
-    strcat(buf, " wheel down");
-  } else {
-    if (e & MOUSE_BUTTON_L) strcat(buf, " left");
-    if (e & MOUSE_BUTTON_M) strcat(buf, " middle");
-    if (e & MOUSE_BUTTON_R) strcat(buf, " right");
-    if (e & MOUSE_MOTION) {
-      strcat(buf, " motion");
-    } else if (e & MOUSE_UP) {
-      strcat(buf, " up");
-    } else {
-      strcat(buf, " down");
-    }
-  }
-  return buf;
-}
-
-/* convert ansi mouse status to TUI status */
-static int ansi_mouse_to_tui(int e)
+/* convert ansi mouse event to unikey and modifiers */
+static int mouse_to_unikey(int e, int *modkeys)
 {
   int status = 0;
-  if (e & 0x10) status |= MOUSE_MOD_CTRL;
-  if (e & 0x08) status |= MOUSE_MOD_ALT;
-  if (e & 0x04) status |= MOUSE_MOD_SHIFT;
-  if (e & 0x40) {
+  int k;
+
+  if (e & 0x10) status |= kCtrl;
+  if (e & 0x08) status |= kAlt;
+  if (e & 0x04) status |= kShift;
+  if (e & 0x40) {           /* wheel */
     if (e & 0x01) {
-      status |= scroll_reverse? MOUSE_WHEEL_UP: MOUSE_WHEEL_DOWN;
+      k = scroll_reverse? kMouseWheelUp: kMouseWheelDown;
     } else {
-      status |= scroll_reverse? MOUSE_WHEEL_DOWN: MOUSE_WHEEL_UP;
+      k = scroll_reverse? kMouseWheelDown: kMouseWheelUp;
     }
   } else {
-        switch (e & 3) {
-      case 0:
-        status |= MOUSE_BUTTON_L;
-        break;
-      case 1:
-        status |= MOUSE_BUTTON_M;
-        break;
-      case 2:
-        status |= MOUSE_BUTTON_R;
-        break;
-      default:
-        unreachable;
-    }
-    if (e & 0x20) {
-      status |= MOUSE_MOTION;
-    } else if (e & 0x80) {
-      status |= MOUSE_UP;
-    } else {
-      /* mouse down */
+    if (e & 0x20) {         /* motion */
+      e &= 3;
+      k = !e? kMouseLeftDrag: e==1? kMouseMiddleDrag: e==2? kMouseRightDrag: kMouseMotion;
+    } else if (e & 0x80) {  /* up */
+      e &= 3;
+      k = !e? kMouseLeftUp: e==1? kMouseMiddleUp: e==2? kMouseRightUp: 0;
+    } else {                /* down */
+      e &= 3;
+      k = !e? kMouseLeftDown: e==1? kMouseMiddleDown: e==2? kMouseRightDown: 0;
     }
   }
-  return status;
+  *modkeys = status;
+  return k;
 }
 
 /*
- * Convert and decode ANSI mouse sequence ESC [ < status;y;x {m|M}
+ * Check and convert ANSI mouse sequence to unicode mouse event. 
+ * Format: ESC [ < status;y;x {m|M}
  * Returns -1 if not ANSI mouse sequence.
  */
-int ansi_to_mouse(char *buf, int n, int *x, int *y, int *status)
+int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status)
 {
     char *p;
+    int k;
 
     if (!startswith(buf, "\e[<") || (buf[n-1] != 'm' && buf[n-1] != 'M'))
         return -1;
@@ -664,15 +647,15 @@ int ansi_to_mouse(char *buf, int n, int *x, int *y, int *status)
     *x = getparm(p, 1) - 1;
     *y = getparm(p, 2) - 1;
     *status |= (buf[n-1] == 'm') << 7;
-    //printf("MOUSE %s at %d×%d\r\n", str_ansi_mouse_event(*status), *x, *y);
-    *status = ansi_mouse_to_tui(*status);
-    //printf("mouse %s at %d×%d\r\n", str_tui_mouse_event(*status), *x, *y);
-    return 1;
+    k = mouse_to_unikey(*status, modkeys);
+    //printf("mouse %s at %d×%d, %s\r\n",describemouseevent(*status), *x, *y, keyname(k));
+    return k;
 }
 
 /*
- * Check and decode ANSI DSR (device status report) ESC [ rows; cols R
- * Returns -s if not ANSI DSR.
+ * Check and respond to ANSI DSR (device status report).
+ * Format: ESC [ rows; cols R
+ * Returns -1 if not ANSI DSR.
  */
 int ansi_dsr(char *buf, int n, int *rows, int *cols)
 {

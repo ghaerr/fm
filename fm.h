@@ -82,12 +82,12 @@ struct key bindings[] = {
 	{ '/',            SEL_FLTR },
 	/* Next */
 	{ KEY_DOWN,       SEL_NEXT },
-	{ MOUSE_WHEEL_DOWN,SEL_NEXT },
+	{ kMouseWheelDown,SEL_NEXT },
 	{ CONTROL('N'),   SEL_NEXT },
 	/* Previous */
 	{ KEY_UP,         SEL_PREV },
 	{ CONTROL('P'),   SEL_PREV },
-	{ MOUSE_WHEEL_UP, SEL_PREV },
+	{ kMouseWheelUp,  SEL_PREV },
 	/* Page down */
 	{ KEY_NPAGE,      SEL_PGDN },
 	{ CONTROL('D'),   SEL_PGDN },
