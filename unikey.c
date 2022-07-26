@@ -630,6 +630,11 @@ static int mouse_to_unikey(int e, int *modkeys)
   return k;
 }
 
+int isdigit(int c)
+{
+    return (unsigned) (c - '0') < 10u;
+}
+
 /*
  * Check and convert ANSI mouse sequence to unicode mouse event. 
  * Format: ESC [ < status;y;x {m|M}
@@ -643,10 +648,18 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
     if (!startswith(buf, "\e[<") || (buf[n-1] != 'm' && buf[n-1] != 'M'))
         return -1;
     p = buf + 3;
+    if (!isdigit(*p)) return -1;
+
     *status = getparm(p, 0);
     *x = getparm(p, 1) - 1;
     *y = getparm(p, 2) - 1;
     *status |= (buf[n-1] == 'm') << 7;
+
+    if (*status > 65) return -1;
+    if (*x < 0 || *x > 100) return -1;
+    if (*y < 0 || *y > 100) return -1;
+    if (getparm(p, 3) != 0) return -1;
+
     k = mouse_to_unikey(*status, modkeys);
     //printf("mouse %s at %d×%d, %s\r\n",describemouseevent(*status), *x, *y, keyname(k));
     return k;

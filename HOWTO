@@ -26,4 +26,4 @@ V       version sort
 I       ignore case
 !       run sh
 E       run vi
-M       run more
+L       run more

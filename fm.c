@@ -821,10 +821,12 @@ nochange:
 		case SEL_NEXT:
 			if (cur < ndents - 1)
 				cur++;
+            else goto nochange;
 			break;
 		case SEL_PREV:
 			if (cur > 0)
 				cur--;
+            else goto nochange;
 			break;
 		case SEL_PGDN:
 			if (cur < ndents - 1)

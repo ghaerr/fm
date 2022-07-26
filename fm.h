@@ -138,5 +138,5 @@ struct key bindings[] = {
 	{ '!',            SEL_RUN, "sh", "SHELL" },
 	/* Run command with argument */
 	{ 'E',            SEL_RUNARG, "vi", "EDITOR" },
-	{ 'M',            SEL_RUNARG, "more", "PAGER" },
+	{ 'L',            SEL_RUNARG, "more", "PAGER" },
 };
