@@ -12,8 +12,7 @@ size_t strlcat(char *, const char *, size_t);
 #undef strlcpy
 size_t strlcpy(char *, const char *, size_t);
 int strverscmp(const char *, const char *);
-int spawnvp(char *, char *, char *[]);
-int spawnlp(char *, char *, char *, ...);
+int runcmd(char *dir, char *cmd, char *file, int shflag);
 
 #undef PATH_MAX
 #undef LINE_MAX

@@ -38,7 +38,7 @@ PRGS = fm
 all: $(LIBS) $(PRGS)
 
 clean:
-	rm *.o *.a fm
+	rm *.o fm
 
 CFLBASE += -mcmodel=small -mno-segment-relocation-stuff
 #CFLBASE += -mcmodel=medium -msegment-relocation-stuff -ffunction-sections
@@ -49,7 +49,7 @@ CFLAGS += -DELKS=1
 #CFLAGS += -Wno-invalid-source-encoding
 LDFLAGS += -maout-heap=0xffff
 
-OBJS = fm.o spawn.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
+OBJS = fm.o runcmd.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
 OBJS += unikey.o runes.o
 
 fm: $(OBJS)

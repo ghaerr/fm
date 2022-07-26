@@ -4,23 +4,18 @@ MANPREFIX = $(PREFIX)/man
 
 TTYOBJ = unikey.o runes.o
 EXTRAOBJ += realpath.o strlcpy.o strlcat.o
-FMOBJ = fm.o spawn.o strverscmp.o curses.o $(TTYOBJ) $(EXTRAOBJ)
-NOPENOBJ = nopen.o spawn.o
+FMOBJ = fm.o runcmd.o strverscmp.o curses.o $(TTYOBJ) $(EXTRAOBJ)
 BIN = fm
-MAN = fm.1 nopen.1
+MAN = fm.1
 
 all: $(BIN)
 
 fm: $(FMOBJ)
 	$(CC) $(CFLAGS) -o $@ $(FMOBJ) $(LDFLAGS)
 
-nopen: $(NOPENOBJ)
-	$(CC) $(CFLAGS) -o $@ $(NOPENOBJ) $(LDFLAGS) $(NOPENLDLIBS)
-
 fm.o: arg.h fm.h util.h
 dprintf.o: util.h
-nopen.o: arg.h nopenconf.h util.h
-spawn.o: util.h
+runcmd.o: util.h
 strlcat.o: util.h
 strlcpy.o: util.h
 strverscmp.o: util.h

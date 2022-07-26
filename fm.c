@@ -126,7 +126,7 @@ xgetenv(char *name, char *fallback)
  *  Adapted from code written by Ingo Wilken.
  *  Adapted from ELKS sash shell.
  */
-static int match(char *text, char *pattern)
+int match(char *text, char *pattern)
 {
 	char	*retrypat;
 	char	*retrytxt;
@@ -374,8 +374,8 @@ nextsel(char **run, char **env)
 	int c, i;
 
 	c = xgetch();
-	if (c == 033)
-		c = META(xgetch());
+	//if (c == 033)
+		//c = META(xgetch());
 	if (c >= 'a' && c <= 'z')
 		return c;
 	for (i = 0; i < LEN(bindings); i++)
@@ -653,12 +653,42 @@ int tolower(int c)
     return (unsigned) (c - 'A') < 26u ? c + ('a' - 'A') : c;
 }
 
+/*
+ * Use helper to open file in dir. If shflag set, use sh -c helper
+ * If helper is NULL, use match string on file to find standard helper.
+ */
+int
+runhelper(char *dir, char *helper, char *file, int shflag)
+{
+	int i;
+    char cmd[LINE_MAX];
+
+    if (!helper) {
+        for (i = 0; i < LEN(rules); i++) {
+            if (match(file, rules[i].matchstr)) {
+                helper = rules[i].helper;
+                shflag = rules[i].shflag;
+                break;
+            }
+        }
+    }
+    if (!helper) {
+        return -1;
+    }
+    if (shflag) {
+        snprintf(cmd, sizeof(cmd), helper, file);
+    } else {
+        strcpy(cmd, helper);
+    }
+    return runcmd(dir, cmd, file, shflag);
+}
+
 void
 browse(char *ipath, char *ifilter)
 {
 	char *dir, *tmp, *run, *env;
 	struct stat sb;
-	int r, fd, shellscript, c;
+	int r, shellscript, c;
     int once = 1;
 	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
 	char fltr[LINE_MAX];
@@ -692,7 +722,7 @@ nochange:
 				goto nochange;
 			dir = xdirname(path);
 			if (canopendir(dir) == 0) {
-				warn("canopendir");
+				warn(dir);
 				goto nochange;
 			}
 			/* Save history */
@@ -709,35 +739,34 @@ nochange:
 			mkpath(path, dents[cur].name, newpath, sizeof(newpath));
 			DPRINTF_S(newpath);
 
-			/* Get path info */
-			fd = open(newpath, O_RDONLY /*| O_NONBLOCK*/);
-			if (fd == -1) {
-				warn("open");
-				goto nochange;
-			}
-			r = fstat(fd, &sb);
+			r = stat(newpath, &sb);
 			if (r == -1) {
-				warn("fstat");
-				close(fd);
+				warn("stat");
 				goto nochange;
 			}
             if (((sb.st_mode & S_IFMT) == S_IFREG) && (sb.st_mode & S_IXUSR)) {
-                int n, i;
+                int n, i, fd;
                 char buf[16];
+
                 shellscript = 1;
+                fd = open(newpath, O_RDONLY | O_NONBLOCK);
+                if (fd == -1) {
+                    warn("open");
+                    goto nochange;
+                }
                 n = read(fd, buf, sizeof(buf));
                 for (i=0; i < n; i++) {
                     if (buf[i] < 9 || buf[i] >= 127)
                         shellscript = 0;
                 }
+                close(fd);
             } else shellscript = 0;
-			close(fd);
 			DPRINTF_U(sb.st_mode);
 
 			switch (sb.st_mode & S_IFMT) {
 			case S_IFDIR:
 				if (canopendir(newpath) == 0) {
-					warn("canopendir");
+					warn(newpath);
 					goto nochange;
 				}
 				strlcpy(path, newpath, sizeof(path));
@@ -750,14 +779,21 @@ nochange:
                     goto nochange;
                 }
 				exitcurses();
-				run = xgetenv("PAGER", PAGER);
-				r = spawnlp(path, run, run, newpath, (void *)0);
+                r = runhelper(path, NULL, newpath, 0);
 				initcurses();
 				if (r == -1) {
-					info("Failed to execute %s", run);
+					info("Failed to open %s", newpath);
 					goto nochange;
 				}
 				continue;
+            case S_IFBLK:
+            case S_IFCHR:
+                info("Device file");
+                goto nochange;
+            case S_IFSOCK:
+            case S_IFIFO:
+                info("Socket/fifo file");
+                goto nochange;
 			default:
 				info("Unsupported file");
 				goto nochange;
@@ -810,12 +846,11 @@ nochange:
 			tmp = readln();
             clearprompt();
 			if (tmp == NULL) {
-				//clearprompt();
 				goto nochange;
 			}
 			mkpath(path, tmp, newpath, sizeof(newpath));
 			if (canopendir(newpath) == 0) {
-				warn("canopendir");
+				warn(newpath);
 				goto nochange;
 			}
 			strlcpy(path, newpath, sizeof(path));
@@ -830,7 +865,7 @@ nochange:
 				goto nochange;
 			}
 			if (canopendir(tmp) == 0) {
-				warn("canopendir");
+				warn(tmp);
 				goto nochange;
 			}
 			strlcpy(path, tmp, sizeof(path));
@@ -870,17 +905,11 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto nochange;
 		case SEL_RUN:
-			run = xgetenv(env, run);
-			exitcurses();
-			spawnlp(path, run, run, (void *)0);
-			initcurses();
-			goto saveandbegin;
 		case SEL_RUNARG:
 			run = xgetenv(env, run);
 			exitcurses();
-			spawnlp(path, run, run, dents[cur].name, (void *)0);
+			runcmd(path, run, (c == SEL_RUNARG)? dents[cur].name: NULL, 0);
 			initcurses();
-			goto saveandbegin;
 		saveandbegin:
 			/* Save current */
 			if (ndents > 0)
@@ -892,7 +921,7 @@ nochange:
 		if (idletimeout != 0 && idle == idletimeout) {
 			idle = 0;
 			exitcurses();
-			spawnlp(NULL, idlecmd, idlecmd, (void *)0);
+			runcmd(NULL, idlecmd, NULL, 0);
 			initcurses();
 		}
 	}

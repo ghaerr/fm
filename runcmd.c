@@ -3,14 +3,13 @@
 #include <sys/wait.h>
 
 #include <errno.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "util.h"
 
 int
-spawnvp(char *dir, char *file, char *argv[])
+runcmd(char *dir, char *cmd, char *file, int shflag)
 {
 	pid_t pid;
 	int status, r;
@@ -22,7 +21,11 @@ spawnvp(char *dir, char *file, char *argv[])
 	case 0:
 		if (dir != NULL && chdir(dir) == -1)
 			exit(1);
-		execvp(file, argv);
+		if (shflag) {
+			execl("/bin/sh", "sh", "-c", cmd, (char*)0);
+		} else {
+			execlp(cmd, cmd, file, (char *)0);
+		}
 		_exit(1);
 	default:
 		while ((r = waitpid(pid, &status, 0)) == -1 && errno == EINTR)
@@ -33,20 +36,4 @@ spawnvp(char *dir, char *file, char *argv[])
 			return -1;
 	}
 	return 0;
-}
-
-int
-spawnlp(char *dir, char *file, char *argv0, ...)
-{
-	char *argv[NR_ARGS];
-	va_list ap;
-	int argc;
-
-	va_start(ap, argv0);
-	argv[0] = argv0;
-	for (argc = 1; (argv[argc] = va_arg(ap, char *)) != (void *)0; argc++)
-		;
-	argv[argc] = NULL;
-	va_end(ap);
-	return spawnvp(dir, file, argv);
 }

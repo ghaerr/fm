@@ -59,6 +59,19 @@ enum action {
 	SEL_RUNARG,
 };
 
+struct rule {
+	char *matchstr;
+    char *helper;       /* program to run or command line if shflag = 1 */
+    int shflag;
+};
+
+struct rule rules[] = {
+    { "*.[123456789].Z",  "man",                                  0 },
+    { "*.[123456789]",    "man",                                  0 },
+    { "*.Z",              "exec compress -dc %s | more",          1 },
+    { "*",                "more",                                 0 }
+};
+
 struct key {
 	int sym;         /* Key pressed */
 	enum action act; /* Action */
