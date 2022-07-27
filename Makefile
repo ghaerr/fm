@@ -2,7 +2,7 @@ VERSION = 0.8
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
 
-TTYOBJ = unikey.o runes.o
+TTYOBJ = unikey.o tty.o runes.o
 EXTRAOBJ += realpath.o strlcpy.o strlcat.o
 FMOBJ = fm.o runcmd.o strverscmp.o curses.o $(TTYOBJ) $(EXTRAOBJ)
 BIN = fm

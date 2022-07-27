@@ -18,59 +18,6 @@ int LINES = 25;
 int COLS = 80;
 void *stdscr;
 
-static struct termios oldterm;
-static struct termios t;
-#define WRITE(FD, SLIT)        write(FD, SLIT, strlen(SLIT))
-#define ENABLE_SAFE_PASTE      "\e[?2004h"
-// 1003 for mouse move all events
-#define ENABLE_MOUSE_TRACKING  "\e[?1000;1002;1015;1006h"
-#define DISABLE_MOUSE_TRACKING "\e[?1000;1002;1015;1006l"
-#define RESET_VIDEO            "\e[1;0;0m\e[?25h"
-#define PROBE_DISPLAY_SIZE     "\e7\e[9979;9979H\e[6n\e8"
-
-static void onkilled(int sig) {
-    exit(1);
-}
-
-static void restoretty(void) {
-  WRITE(1, DISABLE_MOUSE_TRACKING);
-  WRITE(1, RESET_VIDEO);
-  tcsetattr(1, TCSADRAIN, &oldterm);
-}
-
-static void rawtty(void) {
-  t.c_cc[VMIN] = 1;         /* requires ESC ESC ESC for ESC */
-  t.c_cc[VTIME] = 1;
-  t.c_iflag &= ~(INPCK | ISTRIP | PARMRK | INLCR | IGNCR | ICRNL | IXON |
-                 IGNBRK | BRKINT);
-  t.c_lflag &= ~(IEXTEN | ICANON | ECHO | ECHONL /*| ISIG*/);
-  t.c_cflag &= ~(CSIZE | PARENB);
-  //t.c_oflag &= ~OPOST;
-  t.c_cflag |= CS8;
-  //t.c_iflag |= IUTF8;         /* correct kernel backspace behaviour */
-  tcsetattr(1, TCSADRAIN, &t);
-  //WRITE(1, ENABLE_SAFE_PASTE);
-  WRITE(1, ENABLE_MOUSE_TRACKING);
-  //WRITE(1, PROBE_DISPLAY_SIZE);
-}
-
-static int rawmode(void) {
-  static int once;
-  if (!once) {
-    if (tcgetattr(1, &oldterm) != -1) {
-      atexit(restoretty);
-      signal(SIGTERM, onkilled);
-      signal(SIGINT, onkilled);
-    } else {
-      return -1;
-    }
-    once = 1;
-  }
-  memcpy(&t, &oldterm, sizeof(t));
-  rawtty();
-  return 0;
-}
-
 static int setunbuffered(FILE * fp)
 {
 #if ELKS
@@ -95,14 +42,14 @@ static int setlinebuf(FILE * fp)
 
 void *initscr()
 {
-    rawmode();
+    tty_init(MouseTracking|CatchISig);
     setunbuffered(stdout);
     return stdout;
 }
 
 void endwin()
 {
-    restoretty();
+    tty_restore();
     setlinebuf(stdout);
 }
 
@@ -195,11 +142,11 @@ int getch()
 
 void wgetnstr(void *win, char *str, int n)
 {
-    restoretty();
+    tty_restore();
     if (fgets(str, n, stdin))
         str[strlen(str)-1] = '\0';
     else str[0] = '\0';
-    rawtty();
+    tty_enable_unikey();
 }
 
 void start_color()

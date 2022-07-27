@@ -5,6 +5,19 @@
  * ANSI to Unicode keyboard mapping
  */
 
+enum ttyflags {
+    MouseTracking = 1,              /* mouse button tracking */
+    FullMouseTracking = 2,          /* track mouse position events */
+    CatchISig = 4,                  /* catch SIGINT and exit by default */
+    Utf8 = 8,                       /* set termios IUTF8 */
+    ExitLastLine = 16               /* on exit, cursor position to bottom */
+};
+
+/* tty termios and mouse management */
+int tty_init(enum ttyflags flags);
+void tty_enable_unikey(void);
+void tty_restore(void);
+
 /* check and convert from ANSI keyboard sequence to unicode key value */
 int ansi_to_unikey(char *buf, int n);
 

@@ -656,7 +656,7 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
     *y = getparm(p, 2) - 1;
 
 #if CHECK_MOUSE
-    if (*status > 65) return -1;
+    if (*status > 93) return -1;
     if (*x < 0) return -1;
     if (*y < 0) return -1;
     if (getparm(p, 3) != 0) return -1;

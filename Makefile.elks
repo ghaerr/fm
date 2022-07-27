@@ -50,7 +50,7 @@ CFLAGS += -DELKS=1
 LDFLAGS += -maout-heap=0xffff
 
 OBJS = fm.o runcmd.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
-OBJS += unikey.o runes.o
+OBJS += unikey.o tty.o runes.o
 
 fm: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
