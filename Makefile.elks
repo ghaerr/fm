@@ -9,6 +9,8 @@ TINYPRINTF  = $(ELKSCMD_DIR)/lib/tiny_vfprintf.o
 # Compiler variables for ELKS.
 CC      = ia16-elf-gcc
 CFLBASE = -fno-inline -melks-libc -mtune=i8086 -Wall -Os
+CFLBASE += -mcmodel=small -mno-segment-relocation-stuff
+#CFLBASE += -mcmodel=medium -msegment-relocation-stuff -ffunction-sections
 CFLAGS  = $(CFLBASE) $(WARNINGS) $(LOCALFLAGS) $(INCLUDES)
 LD      = ia16-elf-gcc
 LDFLAGS = $(CFLBASE)
@@ -40,8 +42,6 @@ all: $(LIBS) $(PRGS)
 clean:
 	rm *.o fm
 
-CFLBASE += -mcmodel=small -mno-segment-relocation-stuff
-#CFLBASE += -mcmodel=medium -msegment-relocation-stuff -ffunction-sections
 CFLAGS += -DELKS=1
 #CFLAGS += -Wno-pointer-sign
 #CFLAGS += -Wno-misleading-indentation -Wno-unused-function -Wno-unused-variable

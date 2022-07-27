@@ -12,6 +12,7 @@
 #include "unikey.h"
 
 #define ANSI_UTF8       0       /* =1 to decode UTF-9 in readansi() */
+#define CHECK_MOUSE     1       /* =1 to validate ANSI mouse sequences */
 #define DEBUG           1       /* =1 for keyname() */
 #define ESC             27
 #define unreachable
@@ -653,13 +654,15 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
     *status = getparm(p, 0);
     *x = getparm(p, 1) - 1;
     *y = getparm(p, 2) - 1;
-    *status |= (buf[n-1] == 'm') << 7;
 
+#if CHECK_MOUSE
     if (*status > 65) return -1;
-    if (*x < 0 || *x > 100) return -1;
-    if (*y < 0 || *y > 100) return -1;
+    if (*x < 0) return -1;
+    if (*y < 0) return -1;
     if (getparm(p, 3) != 0) return -1;
+#endif
 
+    *status |= (buf[n-1] == 'm') << 7;
     k = mouse_to_unikey(*status, modkeys);
     //printf("mouse %s at %d×%d, %s\r\n",describemouseevent(*status), *x, *y, keyname(k));
     return k;
