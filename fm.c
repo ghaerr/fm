@@ -16,7 +16,6 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "arg.h"
 #include "util.h"
 #include "unikey.h"
 #include "fm.h"
@@ -54,7 +53,6 @@ int usecolor    = 1; /* Set to 1 to enable color attributes */
 char *idlecmd   = "rain"; /* The screensaver program */
 
 struct entry *dents;
-char *argv0;
 int ndents, cur;
 int idle;
 
@@ -922,29 +920,12 @@ nochange:
 	}
 }
 
-void
-usage(void)
-{
-	fprintf(stderr, "usage: %s [-c] [dir]\n", argv0);
-	exit(1);
-}
-
 int
 main(int argc, char *argv[])
 {
-	char cwd[PATH_MAX], *ipath;
+    char *ipath;
 	char *ifilter;
-
-	ARGBEGIN {
-	case 'c':
-		usecolor = 1;
-		break;
-	default:
-		usage();
-	} ARGEND
-
-	if (argc > 1)
-		usage();
+	char cwd[PATH_MAX];
 
 	/* Confirm we are in a terminal */
 	if (!isatty(0) || !isatty(1)) {
@@ -956,8 +937,8 @@ main(int argc, char *argv[])
 		showhidden = 1;
 	initfilter(&ifilter);
 
-	if (argv[0] != NULL) {
-		ipath = argv[0];
+	if (argc > 1) {
+		ipath = argv[1];
 	} else {
 		ipath = getcwd(cwd, sizeof(cwd));
 		if (ipath == NULL)

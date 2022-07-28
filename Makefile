@@ -13,7 +13,7 @@ all: $(BIN)
 fm: $(FMOBJ)
 	$(CC) $(CFLAGS) -o $@ $(FMOBJ) $(LDFLAGS)
 
-fm.o: arg.h fm.h util.h
+fm.o: fm.h util.h
 dprintf.o: util.h
 runcmd.o: util.h
 strlcat.o: util.h

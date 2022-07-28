@@ -1,8 +1,8 @@
 /* See LICENSE file for copyright and license details. */
 #undef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+
 #define LEN(x) (sizeof(x) / sizeof(*(x)))
-#define NR_ARGS	32
 
 #undef PATH_MAX
 #undef LINE_MAX
