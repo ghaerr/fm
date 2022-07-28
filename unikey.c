@@ -673,7 +673,7 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
  * Format: ESC [ rows; cols R
  * Returns -1 if not ANSI DSR.
  */
-int ansi_dsr(char *buf, int n, int *rows, int *cols)
+int ansi_dsr(char *buf, int n, int *cols, int *rows)
 {
     char *p;
 
@@ -684,4 +684,25 @@ int ansi_dsr(char *buf, int n, int *rows, int *cols)
     *cols = getparm(p, 1);
     printf("DSR terminal size is %dx%d\r\n", *cols, *rows);
     return 1;
+}
+
+#define WRITE(FD, SLIT)             write(FD, SLIT, strlen(SLIT))
+#define PROBE_DISPLAY_SIZE          "\e7\e[9979;9979H\e[6n\e8"
+
+/* probe display size - only uses DSR for now, for ELKS/UNIX compatibility */
+int tty_getsize(int *cols, int *rows)
+{
+    int n, x, y;
+    char buf[32];
+
+    WRITE(1, PROBE_DISPLAY_SIZE);
+    if ((n = readansi(0, buf, sizeof(buf))) != -1) {
+        if (ansi_dsr(buf, n, &x, &y) > 0) {
+            *cols = x;
+            *rows = y;
+            //printf("inband signaling says terminal size is %d×%d\r\n", x, y);
+            return 1;
+        }
+    }
+    return -1;
 }

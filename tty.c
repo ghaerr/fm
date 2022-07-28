@@ -54,7 +54,6 @@ void tty_enable_unikey(void)
     } else if (flags & MouseTracking) {
         WRITE(1, ENABLE_MOUSE_TRACKING);
     }
-    //WRITE(1, PROBE_DISPLAY_SIZE);
 }
 
 int tty_init(enum ttyflags f)

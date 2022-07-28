@@ -43,6 +43,7 @@ static int setlinebuf(FILE * fp)
 void *initscr()
 {
     tty_init(MouseTracking|CatchISig);
+    tty_getsize(&COLS, &LINES);
     setunbuffered(stdout);
     return stdout;
 }

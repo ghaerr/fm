@@ -778,6 +778,7 @@ nochange:
                     info("Binary file");
                     goto nochange;
                 }
+                erase();
 				exitcurses();
                 r = runhelper(path, NULL, newpath, 0);
 				initcurses();

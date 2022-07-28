@@ -17,6 +17,7 @@ enum ttyflags {
 int tty_init(enum ttyflags flags);
 void tty_enable_unikey(void);
 void tty_restore(void);
+int tty_getsize(int *cols, int *rows);
 
 /* check and convert from ANSI keyboard sequence to unicode key value */
 int ansi_to_unikey(char *buf, int n);
@@ -26,7 +27,7 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
 const char *describemouseevent(int e);
 
 /* Check and respond to ANSI DSR (device status report). */
-int ansi_dsr(char *buf, int n, int *rows, int *cols);
+int ansi_dsr(char *buf, int n, int *cols, int *rows);
 
 /* return keyname */
 char *unikeyname(int k);
