@@ -104,6 +104,16 @@ void move(int y, int x)
     printf("\e[%d;%dH", y, x);
 }
 
+void clrnl(void)
+{
+    printf("\e[0K\n");
+}
+
+void clrtoeos(void)
+{
+    printf("\e[0J");
+}
+
 void clrtoeol(void)
 {
     printf("\e[0K");

@@ -48,6 +48,8 @@ void erase();
 void curs_set(int cursoron);
 void timeout(int t);
 void move(int y, int x);
+void clrnl(void);
+void clrtoeos(void);
 void clrtoeol(void);
 void printw(char *, ...);
 int getch();

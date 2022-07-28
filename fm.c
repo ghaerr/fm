@@ -505,10 +505,11 @@ printent(struct entry *ent, int active)
 	}
 
 	attron(attr);
-    name[NAME_MAX-1] = '\0';
-	printw("%s%*s %9lu  %s\n", active ? CURSR : EMPTY, -NAME_COLS, name, ent->size,
+	name[NAME_MAX-1] = '\0';
+	printw("%s%*s %9lu  %s", active ? CURSR : EMPTY, -NAME_COLS, name, ent->size,
         timestring(ent->t));
 	attroff(attr);
+	clrnl();
 }
 
 int
@@ -610,8 +611,8 @@ redraw(char *path)
 
 	nlines = MIN(LINES - 4, ndents);
 
-	/* Clean screen */
-	erase();
+	/* top of screen */
+	move(0, 0);
 
 	/* Strip trailing slashes */
 	for (i = strlen(path) - 1; i > 0; i--)
@@ -631,7 +632,8 @@ redraw(char *path)
 	cwd[ncols - strlen(CWD) - 1] = '\0';
 	realpath(cwd, cwdresolved);
 
-	printw(CWD "%s\n\n", cwdresolved);
+	printw(CWD "%s", cwdresolved); clrnl();
+	clrnl();
 
 	/* Print listing */
 	odd = ISODD(nlines);
@@ -646,6 +648,7 @@ redraw(char *path)
 		     i < cur + nlines / 2 + odd; i++)
 			printent(&dents[i], i == cur);
 	}
+	clrtoeos();
 }
 
 int tolower(int c)
