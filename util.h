@@ -4,16 +4,6 @@
 #define LEN(x) (sizeof(x) / sizeof(*(x)))
 #define NR_ARGS	32
 
-#undef dprintf
-int dprintf(int, const char *, ...);
-//void dprintf(const char *, ...);
-#undef strlcat
-size_t strlcat(char *, const char *, size_t);
-#undef strlcpy
-size_t strlcpy(char *, const char *, size_t);
-int strverscmp(const char *, const char *);
-int runcmd(char *dir, char *cmd, char *file, int shflag);
-
 #undef PATH_MAX
 #undef LINE_MAX
 #undef NAME_MAX
@@ -29,19 +19,10 @@ int runcmd(char *dir, char *cmd, char *file, int shflag);
 #define NAME_COLS   32
 #endif
 
+#undef strlcat
+size_t strlcat(char *, const char *, size_t);
+#undef strlcpy
+size_t strlcpy(char *, const char *, size_t);
+int strverscmp(const char *, const char *);
+int runcmd(char *dir, char *cmd, char *file, int shflag);
 char *realpath(const char *path, char resolved[PATH_MAX]);
-
-#ifdef DEBUG
-#define DEBUG_FD 8
-#define DPRINTF_D(x) dprintf(DEBUG_FD, #x "=%d\n", x)
-#define DPRINTF_U(x) dprintf(DEBUG_FD, #x "=%u\n", x)
-#define DPRINTF_S(x) dprintf(DEBUG_FD, #x "=%s\n", x)
-#define DPRINTF_P(x) dprintf(DEBUG_FD, #x "=0x%p\n", x)
-#define DPRINTF_LLU(x) dprintf(DEBUG_FD, #x "=%llu\n", x)
-#else
-#define DPRINTF_D(x)
-#define DPRINTF_U(x)
-#define DPRINTF_S(x)
-#define DPRINTF_P(x)
-#define DPRINTF_LLU(x)
-#endif /* DEBUG */

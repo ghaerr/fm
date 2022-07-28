@@ -22,8 +22,6 @@ strverscmp(const char *str1, const char *str2)
 			char *end2;
 			num1 = strtoul(str1 + i1, &end1, 10);
 			num2 = strtoul(str2 + i2, &end2, 10);
-			DPRINTF_LLU(num1);
-			DPRINTF_LLU(num2);
 			if (num1 < num2)
 				return -1;
 			if (num1 > num2)

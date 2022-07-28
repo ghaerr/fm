@@ -2,7 +2,7 @@
 
 #define KEY_BACKSPACE   kBackSpace
 #define KEY_LEFT        kLeftArrow
-#define KEY_ENTER       0
+#define KEY_ENTER       '\r'
 #define KEY_RIGHT       kRightArrow
 #define KEY_UP          kUpArrow
 #define KEY_DOWN        kDownArrow
@@ -52,6 +52,7 @@ void clrnl(void);
 void clrtoeos(void);
 void clrtoeol(void);
 void printw(char *, ...);
+void waitformouse(void);
 int getch();
 void wgetnstr(void *, char *, int);
 void attron(int a);

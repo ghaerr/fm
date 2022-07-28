@@ -25,6 +25,7 @@ int ansi_to_unikey(char *buf, int n);
 /* check and convert from ANSI mouse sequence to unicode mouse value */
 int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status);
 const char *describemouseevent(int e);
+extern int kDoubleClickTime;
 
 /* Check and respond to ANSI DSR (device status report). */
 int ansi_dsr(char *buf, int n, int *cols, int *rows);
@@ -89,6 +90,7 @@ typedef enum {
     kMouseWheelUp,
     kMouseWheelDown,
     kMouseMotion,
+    kMouseLeftDoubleClick,
 
     kF1     = 0xF020,
     kF2,

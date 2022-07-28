@@ -1,29 +1,45 @@
 Z       quit
 ?       help
-bs      out
-DEL     out
-left    out
-right   in
-ret     in
-^N      next
-down    next
-up      prev
-^P      prev
-^U      pageup
-^D      pagedn
-^L      redraw
+
+a-z     goto matching entry
+0-9     goto matching entry
+
+bs      exit directory
+DEL     exit directory
+left    exit directory
+
+right   enter directory or display file
+ret     enter directory or display file
+
+^N      next entry
+down    next entry
+pagedn  more next entries
+^D      more next entries
+
+^P      previous entry
+up      previous entry
+pageup  more previous entries
+^U      more previous entries
+
+home    first entry
+^       first entry
+H       first entry
+
+end     last entry
+$       last entry
+B       last entry
+
 /       filter
-^       top
-H       top
-$       bottom
-C       cd
-~       cd home
+C       change dir
+~       change to home dir
+
 D       dir sort
 S       size sort
 T       time sort
 V       version sort
 .       show hidden
 I       ignore case
+
+^L      redraw
 !       run sh
 E       run vi
-L       run more

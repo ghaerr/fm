@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include "unikey.h"
 
 #define ANSI_UTF8       0       /* =1 to decode UTF-9 in readansi() */
@@ -18,6 +19,7 @@
 #define unreachable
 
 static char scroll_reverse = 0; /* report reversed scroll wheel direction */
+int kDoubleClickTime = 200;
 
 #if DEBUG
 #pragma GCC diagnostic ignored "-Wmissing-braces"
@@ -48,6 +50,7 @@ struct unikeyname unikeynames[] = {
     kMouseWheelUp,      "kMouseWheelUp",
     kMouseWheelDown,    "kMouseWheelDown",
     kMouseMotion,       "kMouseMotion",
+    kMouseLeftDoubleClick,"kMouseLeftDoubleClick",
     kF1,                "kF1",
     kF2,                "kF2",
     kF3,                "kF3",
@@ -126,7 +129,7 @@ struct unikeyname unikeynames[] = {
 char *unikeyname(int k)
 {
     int i;
-    static char name[16];
+    static char name[24];
 
     for (i = 0; unikeynames[i].key; i++) {
         if (unikeynames[i].key == k) {
@@ -645,6 +648,10 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
 {
     char *p;
     int k;
+    struct timeval t;
+    long tick;
+    static long lasttick;
+    static int lastkey;
 
     if (!startswith(buf, "\e[<") || (buf[n-1] != 'm' && buf[n-1] != 'M'))
         return -1;
@@ -664,6 +671,18 @@ int ansi_to_unimouse(char *buf, int n, int *x, int *y, int *modkeys, int *status
 
     *status |= (buf[n-1] == 'm') << 7;
     k = mouse_to_unikey(*status, modkeys);
+
+    if (k == kMouseLeftDown || k == kMouseLeftUp) {
+        gettimeofday(&t, NULL);
+        tick = t.tv_sec * 1000 + t.tv_usec / 1000;
+        if (k == kMouseLeftDown && lastkey == kMouseLeftUp
+            && (tick - lasttick) < kDoubleClickTime) {
+            k = kMouseLeftDoubleClick;
+        }
+        lasttick = tick;
+    }
+    lastkey = k;
+
     //printf("mouse %s at %d×%d, %s\r\n",describemouseevent(*status), *x, *y, keyname(k));
     return k;
 }

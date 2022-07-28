@@ -374,9 +374,7 @@ nextsel(char **run, char **env)
 	int c, i;
 
 	c = xgetch();
-	//if (c == 033)
-		//c = META(xgetch());
-	if (c >= 'a' && c <= 'z')
+	if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
 		return c;
 	for (i = 0; i < LEN(bindings); i++)
 		if (c == bindings[i].sym) {
@@ -570,8 +568,6 @@ dentfind(struct entry *dents, int n, char *cwd, char *path)
 		return 0;
 	for (i = 0; i < n; i++) {
 		mkpath(cwd, dents[i].name, tmp, sizeof(tmp));
-		DPRINTF_S(path);
-		DPRINTF_S(tmp);
 		if (strcmp(tmp, path) == 0)
 			return i;
 	}
@@ -620,9 +616,6 @@ redraw(char *path)
 			path[i] = '\0';
 		else
 			break;
-
-	DPRINTF_D(cur);
-	DPRINTF_S(path);
 
 	/* No text wrapping in cwd line */
 	ncols = COLS;
@@ -740,7 +733,6 @@ nochange:
 				goto nochange;
 
 			mkpath(path, dents[cur].name, newpath, sizeof(newpath));
-			DPRINTF_S(newpath);
 
 			r = stat(newpath, &sb);
 			if (r == -1) {
@@ -764,7 +756,6 @@ nochange:
                 }
                 close(fd);
             } else shellscript = 0;
-			DPRINTF_U(sb.st_mode);
 
 			switch (sb.st_mode & S_IFMT) {
 			case S_IFDIR:
@@ -809,12 +800,12 @@ nochange:
 			if (tmp == NULL)
 				tmp = ifilter;
 			strlcpy(fltr, tmp, sizeof(fltr));
-			DPRINTF_S(fltr);
 			/* Save current */
 			if (ndents > 0)
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto begin;
         case 'a' ... 'z':
+        case '0' ... '9':
             for (r = 0; r < ndents; r++) {
                 if (++cur >= ndents)
                     cur = 0;
@@ -862,7 +853,6 @@ nochange:
 			strlcpy(path, newpath, sizeof(path));
 			/* Reset filter */
 			strlcpy(fltr, ifilter, sizeof(fltr));
-			DPRINTF_S(path);
 			goto begin;
 		case SEL_CDHOME:
 			tmp = getenv("HOME");
@@ -877,7 +867,6 @@ nochange:
 			strlcpy(path, tmp, sizeof(path));
 			/* Reset filter */
 			strlcpy(fltr, ifilter, sizeof(fltr));
-			DPRINTF_S(path);
 			goto begin;
 		case SEL_TOGGLEDOT:
 			showhidden ^= 1;

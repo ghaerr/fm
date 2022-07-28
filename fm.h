@@ -14,7 +14,6 @@
 #define EXEC_ATTR  A_NORMAL | COLOR_PAIR(2)
 
 #define CONTROL(c)  ((c) ^ 0x40)
-#define META(c)     ((c) ^ 0x80)
 
 struct cpair {
 	int fg;
@@ -80,63 +79,54 @@ struct key {
 };
 
 struct key bindings[] = {
-	/* Quit */
 	{ 'Z',            SEL_QUIT },
-	/* Back */
-	{ KEY_BACKSPACE,  SEL_BACK },
-	{ 127,            SEL_BACK },
-	{ KEY_LEFT,       SEL_BACK },
+
+	{ kBackSpace,     SEL_BACK },       /* exit directory */
+	{ kDel,           SEL_BACK },
+	{ kLeftArrow,     SEL_BACK },
 	{ CONTROL('H'),   SEL_BACK },
-	/* Inside */
-	{ KEY_ENTER,      SEL_GOIN },
-	{ '\r',           SEL_GOIN },
-	{ KEY_RIGHT,      SEL_GOIN },
-	/* Filter */
-	{ '/',            SEL_FLTR },
-	/* Next */
-	{ KEY_DOWN,       SEL_NEXT },
+
+	{ '\r',           SEL_GOIN },       /* enter directory or display file */
+	{ kRightArrow,    SEL_GOIN },
+	{ kMouseLeftDoubleClick,SEL_GOIN },
+
+	{ kDownArrow,     SEL_NEXT },       /* next entry */
 	{ kMouseWheelDown,SEL_NEXT },
 	{ CONTROL('N'),   SEL_NEXT },
-	/* Previous */
-	{ KEY_UP,         SEL_PREV },
+
+	{ kUpArrow,       SEL_PREV },       /* previous entry */
 	{ CONTROL('P'),   SEL_PREV },
 	{ kMouseWheelUp,  SEL_PREV },
-	/* Page down */
-	{ KEY_NPAGE,      SEL_PGDN },
+
+	{ kPageDown,      SEL_PGDN },       /* more next entries */
 	{ CONTROL('D'),   SEL_PGDN },
-	/* Page up */
-	{ KEY_PPAGE,      SEL_PGUP },
+
+	{ kPageUp,        SEL_PGUP },       /* more previous entries */
 	{ CONTROL('U'),   SEL_PGUP },
-	/* Home */
-	{ KEY_HOME,       SEL_HOME },
-	//{ META('<'),      SEL_HOME },
+
+	{ kHome,          SEL_HOME },       /* first entry */
 	{ '^',            SEL_HOME },
 	{ 'H',            SEL_HOME },
-	/* End */
-	{ KEY_END,        SEL_END },
-	//{ META('>'),      SEL_END },
+
+	{ kEnd,           SEL_END },        /* last entry */
 	{ '$',            SEL_END },
 	{ 'B',            SEL_END },
-	/* Change dir */
-	{ 'C',            SEL_CD },
-	{ '~',            SEL_CDHOME },
-	/* Toggle hide .dot files */
-	{ '.',            SEL_TOGGLEDOT },
-	/* Toggle sort by directory first */
-	{ 'D',            SEL_DSORT },
-	/* Toggle sort by size */
-	{ 'S',            SEL_SSIZE },
-	/* Toggle sort by time */
-	{ 'T',            SEL_MTIME },
-	/* Toggle case sensitivity */
-	{ 'I',            SEL_ICASE },
-	/* Toggle sort by version number */
-	{ 'V',            SEL_VERS },
+
+	{ '/',            SEL_FLTR },       /* file filter */
+
+	{ 'C',            SEL_CD },         /* Change dir */
+	{ '~',            SEL_CDHOME },     /* Change to home dir */
+
+	{ '.',            SEL_TOGGLEDOT },  /* Tottle hide .dot files */
+	{ 'D',            SEL_DSORT },      /* Toggle sort by directory first */
+	{ 'S',            SEL_SSIZE },      /* Toggle sort by size */
+	{ 'T',            SEL_MTIME },      /* Toggle sort by time */
+	{ 'I',            SEL_ICASE },      /* Toggle case sensitivity */
+	{ 'V',            SEL_VERS },       /* Toggle sort by version number */
+
 	{ CONTROL('L'),   SEL_REDRAW },
 	{ '?',            SEL_HELP },
-	/* Run command */
+
 	{ '!',            SEL_RUN, "sh", "SHELL" },
-	/* Run command with argument */
 	{ 'E',            SEL_RUNARG, "vi", "EDITOR" },
-	{ 'L',            SEL_RUNARG, "more", "PAGER" },
 };
