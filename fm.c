@@ -121,8 +121,11 @@ xgetenv(char *name, char *fallback)
  *  ?		matches a single character
  *  [abc]	matches 'a', 'b' or 'c'
  *  \c		quotes character c
- *  Adapted from code written by Ingo Wilken.
- *  Adapted from ELKS sash shell.
+ *
+ * Adapted from code written by Ingo Wilken.
+ * Copyright (c) 1993 by David I. Bell
+ * Permission is granted to use, distribute, or modify this source,
+ * provided that this copyright notice remains intact.
  */
 int match(char *text, char *pattern)
 {

@@ -217,7 +217,7 @@ int ansi_to_unikey(char *buf, int n)
             if (buf[1] >= 'a' && buf[1] <= 'z')     /* ESC {a-z} -> ALT-{A-Z} */
                 return buf[1] - 'a' + kAltA;
 
-            if (buf[1] >= '1' && buf[1] <= '9')     /* ESC {1-9] -> Fn{1-9} */
+            if (buf[1] >= '1' && buf[1] <= '9')     /* ESC {1-9} -> Fn{1-9} */
                 return buf[1] - '1' + kF1;
             if (buf[1] == '0')
                 return kF10;
@@ -701,7 +701,7 @@ int ansi_dsr(char *buf, int n, int *cols, int *rows)
     p = buf + 2;
     *rows = getparm(p, 0);
     *cols = getparm(p, 1);
-    printf("DSR terminal size is %dx%d\r\n", *cols, *rows);
+    //printf("DSR terminal size is %dx%d\r\n", *cols, *rows);
     return 1;
 }
 
