@@ -28,3 +28,8 @@ The file [HOWTO](https://github.com/ghaerr/fm/blob/master/HOWTO) describes
 the keystrokes to browse a filesystem.
 
 For more information, refer to the man page.
+
+## Screenshots
+
+`fm` file manager running on macOS
+![ss1](https://github.com/ghaerr/fm/blob/master/Screenshots/FM_terminal.png)
