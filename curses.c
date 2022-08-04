@@ -18,40 +18,17 @@ int LINES = 25;
 int COLS = 80;
 void *stdscr;
 
-static int setunbuffered(FILE * fp)
-{
-#if ELKS
-   fflush(fp);
-   fp->mode &= ~__MODE_BUF;
-   //fp->mode |= _IOFBF;
-   fp->bufpos = fp->bufread = fp->bufwrite = fp->bufstart;
-#endif
-   return 0;
-}
-
-#if ELKS
-#undef setlinebuf
-static int setlinebuf(FILE * fp)
-{
-   fflush(fp);
-   fp->mode &= ~__MODE_BUF;
-   fp->mode |= _IOLBF;
-   return 0;
-}
-#endif
-
 void *initscr()
 {
-    tty_init(MouseTracking|CatchISig);
+    tty_init(MouseTracking|CatchISig|FullBuffer);
     tty_getsize(&COLS, &LINES);
-    setunbuffered(stdout);
     return stdout;
 }
 
 void endwin()
 {
     tty_restore();
-    setlinebuf(stdout);
+    tty_linebuffer();
 }
 
 int has_colors()

@@ -10,14 +10,25 @@ enum ttyflags {
     FullMouseTracking = 2,          /* track mouse position events */
     CatchISig = 4,                  /* catch SIGINT and exit by default */
     Utf8 = 8,                       /* set termios IUTF8 */
-    ExitLastLine = 16               /* on exit, cursor position to bottom */
+    ExitLastLine = 16,              /* on exit, cursor position to bottom */
+    FullBuffer                      /* fully buffered output */
 };
 
-/* tty termios and mouse management */
+/* tty.c - tty termios and mouse management */
 int tty_init(enum ttyflags flags);
 void tty_enable_unikey(void);
 void tty_restore(void);
+void tty_fullbuffer(void);
+void tty_linebuffer(void);
 int tty_getsize(int *cols, int *rows);
+extern int iselksconsole;
+
+/* tty-cp437.c - display cp437 characters */
+char *tty_allocate_screen(int cols, int lines);
+void tty_output_screen(int flush);
+void tty_setfgpalette(const int *pal16, const int *pal256);
+
+/* unikey.c - recognize ANSI input */
 
 /* check and convert from ANSI keyboard sequence to unicode key value */
 int ansi_to_unikey(char *buf, int n);

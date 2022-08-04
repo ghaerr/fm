@@ -1,5 +1,6 @@
 /* tty management for unikey */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -10,6 +11,7 @@
 static struct termios oldterm;
 static struct termios t;
 static int flags;
+int iselksconsole;
 
 #define WRITE(FD, SLIT)             write(FD, SLIT, strlen(SLIT))
 #define ENABLE_SAFE_PASTE           "\e[?2004h"
@@ -56,6 +58,42 @@ void tty_enable_unikey(void)
     }
 }
 
+void tty_fullbuffer(void)
+{
+    fflush(stdout);
+#if ELKS
+    /* use existing stdout buffer to save heap space */
+    setvbuf(stdout, (char *)stdout->bufstart, _IOFBF, stdout->bufend - stdout->bufstart);
+#else
+    setvbuf(stdout, NULL, _IOFBF, 0);
+#endif
+}
+
+void tty_linebuffer(void)
+{
+    fflush(stdout);
+#if ELKS
+    /* use existing stdout buffer to save heap space */
+    setvbuf(stdout, (char *)stdout->bufstart, _IOLBF, stdout->bufend - stdout->bufstart);
+#else
+    setvbuf(stdout, NULL, _IOLBF, 0);
+#endif
+}
+
+int tty_iselksconsole(int fd)
+{
+#if ELKS
+    char *p = ttyname(fd);
+
+    if (!p) return 0;
+    return !strcmp(p, "/dev/tty1") ||
+           !strcmp(p, "/dev/tty2") ||
+           !strcmp(p, "/dev/tty3");
+#else
+    return 0;
+#endif
+}
+
 int tty_init(enum ttyflags f)
 {
     static int once;
@@ -71,7 +109,10 @@ int tty_init(enum ttyflags f)
         }
         once = 1;
         memcpy(&t, &oldterm, sizeof(t));
+        iselksconsole = tty_iselksconsole(1);
     }
     tty_enable_unikey();
+    if (flags & FullBuffer)
+        tty_fullbuffer();
     return 0;
 }
