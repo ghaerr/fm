@@ -24,12 +24,12 @@ struct cpair {
 struct cpair pairs[] = {
 	{ .fg = 0, .bg = 0 },
 	/* pairs start at 1 */
-	{ COLOR_RED,     -1 },
-	{ COLOR_GREEN,   -1 },
-	{ COLOR_YELLOW,  -1 },
-	{ COLOR_BLUE,    -1 },
-	{ COLOR_MAGENTA, -1 },
-	{ COLOR_CYAN,    -1 },
+	{ COLOR_RED,     -1 },  /* COLOR_PAIR(1) */
+	{ COLOR_GREEN,   -1 },  /* COLOR_PAIR(2) */
+	{ COLOR_YELLOW,  -1 },  /* COLOR_PAIR(3) */
+	{ COLOR_BLUE,    -1 },  /* COLOR_PAIR(4) */
+	{ COLOR_MAGENTA, -1 },  /* COLOR_PAIR(5) */
+	{ COLOR_CYAN,    -1 },  /* COLOR_PAIR(6) */
 };
 
 /* Supported actions */
