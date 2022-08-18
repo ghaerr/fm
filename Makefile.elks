@@ -49,7 +49,7 @@ CFLAGS += -DELKS=1
 #CFLAGS += -Wno-invalid-source-encoding
 LDFLAGS += -maout-heap=0xffff
 
-OBJS = fm.o runcmd.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
+OBJS = fm.o strlcat.o strlcpy.o strverscmp.o curses.o realpath.o v7malloc.o
 OBJS += unikey.o tty.o runes.o
 
 fm: $(OBJS)

@@ -54,28 +54,33 @@ enum action {
 	SEL_VERS,
 	SEL_REDRAW,
 	SEL_HELP,
-	SEL_RUN,
-	SEL_RUNARG,
+	SEL_RUN
+};
+
+enum runtype {
+    Noargs,             /* exec w/no arguments */
+    Curname,            /* exec and pass current filename as argument */
+    Runshell            /* run sh -c on command line and %s argument */
 };
 
 struct rule {
-	char *matchstr;
-    char *helper;       /* program to run or command line if shflag = 1 */
-    int shflag;
+    char *matchstr;     /* regular matching expression */
+    char *cmd;          /* program or command line to run */
+    enum runtype type;  /* type of command line */
 };
 
 struct rule rules[] = {
-    { "*.[123456789].Z",  "man",                                  0 },
-    { "*.[123456789]",    "man",                                  0 },
-    { "*.Z",              "exec compress -dc %s | more",          1 },
-    { "*",                "more",                                 0 }
+    { "*.[123456789].Z",  "man",                                  Curname },
+    { "*.[123456789]",    "man",                                  Curname },
+    { "*.Z",              "exec compress -dc %s | more",          Runshell },
+    { "*",                "more",                                 Curname }
 };
 
 struct key {
-	int sym;         /* Key pressed */
-	enum action act; /* Action */
-	char *run;       /* Program to run */
-	char *env;       /* Environment variable override */
+    int sym;         	    /* Key pressed */
+    enum action act; 	    /* Action */
+    char *run;       	    /* Program to run or command line */
+    enum runtype type;      /* Type of command line */
 };
 
 struct key bindings[] = {
@@ -127,6 +132,7 @@ struct key bindings[] = {
 	{ CONTROL('L'),   SEL_REDRAW },
 	{ '?',            SEL_HELP },
 
-	{ '!',            SEL_RUN, "sh", "SHELL" },
-	{ 'E',            SEL_RUNARG, "vi", "EDITOR" },
+	{ '!',            SEL_RUN, "sh",                            Noargs },
+	{ 'E',            SEL_RUN, "vi",                            Curname },
+	{ 'G',            SEL_RUN, "exec compress -dc %s | more",   Runshell }
 };

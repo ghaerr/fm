@@ -15,6 +15,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "util.h"
 #include "unikey.h"
@@ -251,6 +253,69 @@ entrycmp(const void *va, const void *vb)
 	return strcmp(a->name, b->name);
 }
 
+int
+runcmd(char *dir, char *cmd, char *curname, enum runtype type)
+{
+	pid_t pid;
+	int status, r;
+    char shellcmd[LINE_MAX];
+
+    if (type == Runshell)
+        snprintf(shellcmd, sizeof(shellcmd), cmd, curname);
+    else {
+        /* look up env variable aliases for various commands */
+        if (!strcmp(cmd, "vi"))
+            cmd = xgetenv("EDITOR", cmd);
+        else if (!strcmp(cmd, "more"))
+            cmd = xgetenv("PAGER", cmd);
+        else if (!strcmp(cmd, "sh"))
+            cmd = xgetenv("SHELL", cmd);
+    }
+
+	pid = fork();
+	switch (pid) {
+	case -1:
+		return -1;
+	case 0:
+		if (dir != NULL && chdir(dir) == -1)
+			exit(1);
+		if (type ==  Runshell) {
+			execl("/bin/sh", "sh", "-c", shellcmd, NULL);
+		} else {
+			execlp(cmd, cmd, (type == Curname)? curname: NULL, NULL);
+		}
+		_exit(1);
+	default:
+		while ((r = waitpid(pid, &status, 0)) == -1 && errno == EINTR)
+			continue;
+		if (r == -1)
+			return -1;
+		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+			return -1;
+	}
+	return 0;
+}
+
+/* match curname against rules and run matching command string */
+int
+matchandrun(char *dir, char *curname)
+{
+    int i;
+    char *cmd = NULL;
+    enum runtype type;
+
+    for (i = 0; i < LEN(rules); i++) {
+        if (match(curname, rules[i].matchstr)) {
+            cmd = rules[i].cmd;
+            type = rules[i].type;
+            break;
+        }
+    }
+    if (!cmd)
+        return -1;
+    return runcmd(dir, cmd, curname, type);
+}
+
 void
 initcolor(void)
 {
@@ -367,10 +432,9 @@ xgetch(void)
 	return c;
 }
 
-/* Returns SEL_* if key is bound and 0 otherwise.
- * Also modifies the run and env pointers (used on SEL_{RUN,RUNARG}) */
+/* search key bindings and return key and/or SEL_ action */
 int
-nextsel(char **run, char **env)
+nextsel(char **run, enum runtype *type)
 {
 	int c, i;
 
@@ -380,7 +444,7 @@ nextsel(char **run, char **env)
 	for (i = 0; i < LEN(bindings); i++)
 		if (c == bindings[i].sym) {
 			*run = bindings[i].run;
-			*env = bindings[i].env;
+			*type = bindings[i].type;
 			return bindings[i].act;
 		}
 	return 0;
@@ -650,42 +714,13 @@ int tolower(int c)
     return (unsigned) (c - 'A') < 26u ? c + ('a' - 'A') : c;
 }
 
-/*
- * Use helper to open file in dir. If shflag set, use sh -c helper
- * If helper is NULL, use match string on file to find standard helper.
- */
-int
-runhelper(char *dir, char *helper, char *file, int shflag)
-{
-	int i;
-    char cmd[LINE_MAX];
-
-    if (!helper) {
-        for (i = 0; i < LEN(rules); i++) {
-            if (match(file, rules[i].matchstr)) {
-                helper = rules[i].helper;
-                shflag = rules[i].shflag;
-                break;
-            }
-        }
-    }
-    if (!helper) {
-        return -1;
-    }
-    if (shflag) {
-        snprintf(cmd, sizeof(cmd), helper, file);
-    } else {
-        strcpy(cmd, helper);
-    }
-    return runcmd(dir, cmd, file, shflag);
-}
-
 void
 browse(char *ipath, char *ifilter)
 {
-	char *dir, *tmp, *run, *env;
+	char *dir, *tmp, *run;
 	struct stat sb;
 	int r, shellscript, c;
+    enum runtype type;
     int once = 1;
 	char path[PATH_MAX], oldpath[PATH_MAX], newpath[PATH_MAX];
 	char fltr[LINE_MAX];
@@ -707,7 +742,7 @@ begin:
             once = 0;
         }
 nochange:
-		switch (c = nextsel(&run, &env)) {
+		switch (c = nextsel(&run, &type)) {
 		case SEL_QUIT:
 			dentfree(dents);
 			return;
@@ -775,7 +810,7 @@ nochange:
                 }
                 erase();
 				exitcurses();
-                r = runhelper(path, NULL, newpath, 0);
+                r = matchandrun(path, newpath);
 				initcurses();
 				if (r == -1) {
 					info("Failed to open %s", newpath);
@@ -901,10 +936,8 @@ nochange:
 				mkpath(path, dents[cur].name, oldpath, sizeof(oldpath));
 			goto nochange;
 		case SEL_RUN:
-		case SEL_RUNARG:
-			run = xgetenv(env, run);
 			exitcurses();
-			runcmd(path, run, (c == SEL_RUNARG)? dents[cur].name: NULL, 0);
+			runcmd(path, run, dents[cur].name, type);
 			initcurses();
 		saveandbegin:
 			/* Save current */
@@ -917,7 +950,7 @@ nochange:
 		if (idletimeout != 0 && idle == idletimeout) {
 			idle = 0;
 			exitcurses();
-			runcmd(NULL, idlecmd, NULL, 0);
+			runcmd(NULL, idlecmd, NULL, Noargs);
 			initcurses();
 		}
 	}

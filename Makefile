@@ -4,7 +4,7 @@ MANPREFIX = $(PREFIX)/man
 
 TTYOBJ = unikey.o tty.o runes.o
 EXTRAOBJ += realpath.o strlcpy.o strlcat.o
-FMOBJ = fm.o runcmd.o strverscmp.o curses.o $(TTYOBJ) $(EXTRAOBJ)
+FMOBJ = fm.o strverscmp.o curses.o $(TTYOBJ) $(EXTRAOBJ)
 BIN = fm
 MAN = fm.1
 
@@ -15,7 +15,6 @@ fm: $(FMOBJ)
 
 fm.o: fm.h util.h
 dprintf.o: util.h
-runcmd.o: util.h
 strlcat.o: util.h
 strlcpy.o: util.h
 strverscmp.o: util.h

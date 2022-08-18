@@ -7,6 +7,7 @@
  * 
  * © 2012-2016 Connor Lane Smith <cls@lubutu.com>
  * © 2015 Laslo Hunhold <dev@frign.de>
+ * © 2022 adapted by Greg Haerr
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -68,7 +69,7 @@ int runelen(Rune r)
 }
 
 /* convert Rune to UTF-8 + NUL, return length */
-int runetochar(char *s, Rune r)
+int runetostr(char *s, Rune r)
 {
     unsigned char i, n, x;
 

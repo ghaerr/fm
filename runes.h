@@ -15,6 +15,6 @@ typedef uint16_t Rune;  /* UCS-2 encodings only */
 
 int isvalidrune(Rune r);            /* is Rune valid? */
 int runelen(Rune r);                /* UTF-8 length of Rune */
-int runetochar(char *s, Rune r);    /* convert Rune to UTF-8 + NUL, return length */
+int runetostr(char *s, Rune r);     /* convert Rune to UTF-8 + NUL, return length */
 
 #endif

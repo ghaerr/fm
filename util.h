@@ -24,5 +24,4 @@ size_t strlcat(char *, const char *, size_t);
 #undef strlcpy
 size_t strlcpy(char *, const char *, size_t);
 int strverscmp(const char *, const char *);
-int runcmd(char *dir, char *cmd, char *file, int shflag);
 char *realpath(const char *path, char resolved[PATH_MAX]);
