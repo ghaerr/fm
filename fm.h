@@ -58,9 +58,10 @@ enum action {
 };
 
 enum runtype {
-    Noargs,             /* exec w/no arguments */
-    Curname,            /* exec and pass current filename as argument */
-    Runshell            /* run sh -c on command line and %s argument */
+    Noargs,             /* exec cmd w/no arguments */
+    Curname,            /* exec cmd and pass current filename as %s argument */
+    Runcurname,         /* exec current filename w/no argument */
+    Runshell            /* run sh -c on cmd and %s argument */
 };
 
 struct rule {
@@ -134,5 +135,5 @@ struct key bindings[] = {
 
 	{ '!',            SEL_RUN, "sh",                            Noargs },
 	{ 'E',            SEL_RUN, "vi",                            Curname },
-	{ 'G',            SEL_RUN, "exec compress -dc %s | more",   Runshell }
+	{ 'R',            SEL_RUN, "./%s",                          Runcurname }
 };

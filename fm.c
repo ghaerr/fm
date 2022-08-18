@@ -256,11 +256,11 @@ entrycmp(const void *va, const void *vb)
 int
 runcmd(char *dir, char *cmd, char *curname, enum runtype type)
 {
-	pid_t pid;
-	int status, r;
+    pid_t pid;
+    int status, r;
     char shellcmd[LINE_MAX];
 
-    if (type == Runshell)
+    if (type == Runshell || type == Runcurname)
         snprintf(shellcmd, sizeof(shellcmd), cmd, curname);
     else {
         /* look up env variable aliases for various commands */
@@ -272,20 +272,28 @@ runcmd(char *dir, char *cmd, char *curname, enum runtype type)
             cmd = xgetenv("SHELL", cmd);
     }
 
-	pid = fork();
-	switch (pid) {
-	case -1:
-		return -1;
-	case 0:
-		if (dir != NULL && chdir(dir) == -1)
-			exit(1);
-		if (type ==  Runshell) {
-			execl("/bin/sh", "sh", "-c", shellcmd, NULL);
-		} else {
-			execlp(cmd, cmd, (type == Curname)? curname: NULL, NULL);
-		}
-		_exit(1);
-	default:
+    pid = fork();
+    switch (pid) {
+    case -1:
+        return -1;
+    case 0:
+        if (dir != NULL && chdir(dir) == -1)
+            exit(1);
+        switch (type) {
+        case Runcurname:
+            execlp(shellcmd, shellcmd, NULL);
+            if (errno != ENOEXEC)
+                break;
+            /* fall thru and try running as shell script */
+        case Runshell:
+            execl("/bin/sh", "sh", "-c", shellcmd, NULL);
+            break;
+        default:
+            execlp(cmd, cmd, (type == Curname)? curname: NULL, NULL);
+            break;
+        }
+        _exit(1);
+    default:
 		while ((r = waitpid(pid, &status, 0)) == -1 && errno == EINTR)
 			continue;
 		if (r == -1)
@@ -937,8 +945,12 @@ nochange:
 			goto nochange;
 		case SEL_RUN:
 			exitcurses();
-			runcmd(path, run, dents[cur].name, type);
+			r = runcmd(path, run, dents[cur].name, type);
 			initcurses();
+            if (r) {
+                printf("Execution failure, press key to continue\n");
+                xgetch();
+            }
 		saveandbegin:
 			/* Save current */
 			if (ndents > 0)

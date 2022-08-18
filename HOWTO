@@ -43,3 +43,4 @@ I       ignore case
 ^L      redraw
 !       run sh
 E       run vi
+R       run selected program
