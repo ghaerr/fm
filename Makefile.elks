@@ -58,3 +58,7 @@ fm: $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 	cp fm $(TOPDIR)/elkscmd/rootfs_template/root
 
+sl: sl.o curses.o unikey.o tty.o
+	$(LD) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	cp sl $(TOPDIR)/elkscmd/rootfs_template/root
+

@@ -64,6 +64,34 @@ void timeout(int t)
 {
 }
 
+void leaveok(void *win, int flag)
+{
+}
+
+void nodelay(void *win, int flag)
+{
+}
+
+void scrollok(void *win, int flag)
+{
+}
+
+void refresh()
+{
+    fflush(stdout);
+}
+
+void mvcur(int oy, int ox, int y, int x)
+{
+    printf("\e[%d;%dH", y, x);
+}
+
+int mvaddch(int y, int x, int ch)
+{
+    printf("\e[%d;%dH%c", y, x, ch);
+    return OK;
+}
+
 /* cursor on/off */
 void curs_set(int visibility)
 {

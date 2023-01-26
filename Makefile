@@ -13,6 +13,9 @@ all: $(BIN)
 fm: $(FMOBJ)
 	$(CC) $(CFLAGS) -o $@ $(FMOBJ) $(LDFLAGS)
 
+sl: sl.o curses.o $(TTYOBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
 fm.o: fm.h util.h
 dprintf.o: util.h
 strlcat.o: util.h
