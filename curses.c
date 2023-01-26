@@ -78,7 +78,7 @@ void erase()
 
 void move(int y, int x)
 {
-    printf("\e[%d;%dH", y, x);
+    printf("\e[%d;%dH", y+1, x+1);
 }
 
 void clrnl(void)

@@ -1,4 +1,6 @@
-# External ELKS application Makefile
+# Makefile.elks - make fm for ELKS
+
+# Change TOPDIR to ELKS directory on local system
 TOPDIR = /Users/greg/net/elks-gh
 
 ###############################################################################
